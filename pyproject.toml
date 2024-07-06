@@ -1,0 +1,23 @@
+[project]
+name = "gospeed_api"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "tick97115115", email = "32931796+tick97115115@users.noreply.github.com"},
+]
+dependencies = [
+    "pydantic>=2.8.2",
+    "pytest>=8.2.2",
+    "requests>=2.32.3",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
