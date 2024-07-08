@@ -10,4 +10,4 @@ class ResolveRequest(BaseModel):
 class ResolveRequest_Response(BaseModel):
   code: int
   msg: str
-  data: ResolveRequest_ResponseData
+  data: Optional[ResolveRequest_ResponseData] = None

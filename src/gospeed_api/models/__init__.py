@@ -46,26 +46,27 @@ class ResolveRequest_Response_Res_File(BaseModel):
   name: str
   path: str
   size: int
-  #ctime: Optional[str] # ISO8601 UTC 
+  ctime: str # ISO8601 UTC 
+  # req: None
 
 class ResolveRequest_Response_Res(BaseModel):
   name: str
   size: int
   range: bool
   files: List[ResolveRequest_Response_Res_File]
-  hash: Optional[str] = None
+  hash: str
 
 class ResolveRequest_ResponseData(BaseModel):
   id: str
   res: ResolveRequest_Response_Res
 
 class CreateTask_DownloadOpt_Extra(BaseModel):
-  autoTorrent: bool
+  autoTorrent: Optional[bool] = None
   connections: int
 
 class CreateTask_DownloadOpt(BaseModel):
-  name: str
-  path: str
-  selectFiles: List[int]
-  extra: CreateTask_DownloadOpt_Extra
+  name: Optional[str] = None
+  path: Optional[str] = None
+  selectFiles: List[int] = [0]
+  extra: CreateTask_DownloadOpt_Extra = CreateTask_DownloadOpt_Extra(connections=16)
   

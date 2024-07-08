@@ -7,7 +7,6 @@ authors = [
 ]
 dependencies = [
     "pydantic>=2.8.2",
-    "pytest>=8.2.2",
     "requests>=2.32.3",
 ]
 requires-python = ">=3.10"
@@ -21,3 +20,8 @@ build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=8.2.2",
+]
