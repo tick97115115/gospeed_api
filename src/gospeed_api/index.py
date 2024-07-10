@@ -1,3 +1,8 @@
+from urllib.parse import urljoin
+from typing import Set, Dict
+
+import requests
+
 from .models.get_server_info import GetServerInfo_Response
 from .models.resolve_a_request import ResolveRequest, ResolveRequest_Response
 from .models.get_task_list import GetTaskList_Response
@@ -9,9 +14,6 @@ from .models.pause_a_task import PauseATask_Response
 from .models.continue_a_task import ContinueATask_Response
 from .models.pause_all_tasks import PauseAllTasks_Response
 from .models.continue_all_tasks import ContinueAllTasks_Response
-import requests
-from urllib.parse import urljoin
-from typing import Set
 from .models import TASK_STATUS
 
 def my_url_join(first: str, last: str) -> str:
@@ -19,6 +21,8 @@ def my_url_join(first: str, last: str) -> str:
     if (first[-1] != '/' and last[0] != '/'):
         first = first + '/'
     return str(urljoin(first, last))
+
+TIMEOUT_SECONDS: int = 8
 
 class GospeedClient:
     """This class represent Gospeed Rest API interface, initializing with Gospeed API address."""
@@ -37,7 +41,7 @@ class GospeedClient:
 
     def get_server_info(self) -> GetServerInfo_Response:
         """Return Gospeed server info"""
-        res = requests.get(url=self.endpoint_info)
+        res = requests.get(url=self.endpoint_info, timeout=TIMEOUT_SECONDS)
         if res.status_code == 200:
             json = res.json()
             return GetServerInfo_Response(**json)
@@ -47,7 +51,7 @@ class GospeedClient:
 
     def resolve_a_request(self, param: ResolveRequest) -> ResolveRequest_Response:
         """resolve request link and return ResolveRequest_Response data model object."""
-        res = requests.post(url=self.endpoint_resolve, data=param.model_dump_json(), headers={"content-type": "application/json", "accept": "application/json"})
+        res = requests.post(url=self.endpoint_resolve, data=param.model_dump_json(), headers={"content-type": "application/json", "accept": "application/json"}, timeout=TIMEOUT_SECONDS)
         if res.status_code == 200:
             json = res.json()
             return ResolveRequest_Response(**json)
@@ -55,9 +59,15 @@ class GospeedClient:
             res.raise_for_status()
             return None
 
-    def get_task_list(self, status: Set[TASK_STATUS]) -> GetTaskList_Response:
+    def get_task_list(self, status: Set[TASK_STATUS] = None) -> GetTaskList_Response:
         """Get all tasks according to specified status."""
-        res = requests.get(url=self.endpoint_task, params={'status': list(status)}, headers={'accept': 'application/json'})
+        query_paramter: Dict | None = None
+        if (isinstance(status, Set) and len(status) == 0):
+            raise TypeError('status Set should not be empty!')
+        if (status is not None):
+            query_paramter = {'status': list(status)}
+
+        res = requests.get(url=self.endpoint_task, params=query_paramter, headers={'accept': 'application/json'}, timeout=TIMEOUT_SECONDS)
         if res.status_code == 200:
             json = res.json()
             return GetTaskList_Response(**json)
@@ -67,7 +77,7 @@ class GospeedClient:
 
     def create_a_task_from_resolved_id(self, param: CreateATask_fromResolvedId) -> CreateATask_Response:
         r"""receive CreateATask_fromResolvedId object as paramter. see src\gospeed_api\models\create_a_task.py for detail return data structure."""
-        res = requests.post(url=self.endpoint_task, headers={"accept": "application/json", "content-type": "application/json"}, data=param.model_dump_json())
+        res = requests.post(url=self.endpoint_task, headers={"accept": "application/json", "content-type": "application/json"}, data=param.model_dump_json(), timeout=TIMEOUT_SECONDS)
         if res.status_code == 200:
             json = res.json()
             return CreateATask_Response(**json)
@@ -77,7 +87,7 @@ class GospeedClient:
 
     def create_a_task_from_url(self, param: CreateATask_fromUrl) -> CreateATask_Response:
         """Directly create a task instead of resolve it's information first."""
-        res = requests.post(self.endpoint_task, headers={"accept": "application/json", "content-type": "application/json"}, data=param.model_dump_json())
+        res = requests.post(self.endpoint_task, headers={"accept": "application/json", "content-type": "application/json"}, data=param.model_dump_json(), timeout=TIMEOUT_SECONDS)
         if res.status_code == 200:
             json = res.json()
             return CreateATask_Response(**json)
@@ -87,7 +97,7 @@ class GospeedClient:
 
     def delete_a_task(self, rid: str, force: bool = False) -> DeleteATask_Response:
         """Delete a task by specify it's id, force if true will delete the file also."""
-        res = requests.delete(url=my_url_join(self.endpoint_task, rid), params={'force': str(force).lower()})
+        res = requests.delete(url=my_url_join(self.endpoint_task, rid), params={'force': str(force).lower()}, timeout=TIMEOUT_SECONDS)
         if res.status_code == 200:
             json = res.json()
             return DeleteATask_Response(**json)
@@ -97,7 +107,7 @@ class GospeedClient:
 
     def create_a_batch_of_tasks(self, data: CreateABatchOfTasks) -> CreateABatchOfTasks_Response:
         """Create multiple tasks at once."""
-        res = requests.post(self.endpoint_task_batch, headers={"accept": "application/json", "content-type": "application/json"}, data=data.model_dump_json())
+        res = requests.post(self.endpoint_task_batch, headers={"accept": "application/json", "content-type": "application/json"}, data=data.model_dump_json(), timeout=TIMEOUT_SECONDS)
         if res.status_code == 200:
             json = res.json()
             return CreateABatchOfTasks_Response(**json)
@@ -105,9 +115,18 @@ class GospeedClient:
             res.raise_for_status()
             return None
 
-    def delete_tasks(self, status: Set[TASK_STATUS], force: bool = False) -> DeleteATask_Response:
+    def delete_tasks(self, status: Set[TASK_STATUS] = None, force: bool = False) -> DeleteATask_Response:
         """Delete tasks according to specified status."""
-        res = requests.delete(self.endpoint_task, params={'status': list(status), 'force': str(force).lower()})
+        query_paramter: Dict = {
+            'force': str(force).lower()
+        }
+
+        if (isinstance(status, Set) and len(status) == 0):
+            raise TypeError('Argument \"status\" Set is empty!')
+        if (status is not None):
+            query_paramter['status'] = list(status)
+        
+        res = requests.delete(self.endpoint_task, params=query_paramter, timeout=TIMEOUT_SECONDS)
         if res.status_code == 200:
             json = res.json()
             return DeleteATask_Response(**json)
@@ -117,7 +136,7 @@ class GospeedClient:
 
     def get_task_info(self, rid: str) -> GetTaskInfo_Response:
         """Get a task info from it's id."""
-        res = requests.get(url=my_url_join(self.endpoint_task, rid), headers={"accept": "application/json"})
+        res = requests.get(url=my_url_join(self.endpoint_task, rid), headers={"accept": "application/json"}, timeout=TIMEOUT_SECONDS)
         if res.status_code == 200:
             json = res.json()
             return GetTaskInfo_Response(**json)
@@ -129,7 +148,7 @@ class GospeedClient:
         """Pause a task download according to task id."""
         url = my_url_join(self.endpoint_task, rid)
         url = my_url_join(url, 'pause')
-        res = requests.put(url=url)
+        res = requests.put(url=url, timeout=TIMEOUT_SECONDS)
         if (res.status_code == 200):
             json = res.json()
             return PauseATask_Response(**json)
@@ -141,7 +160,7 @@ class GospeedClient:
         """Continue a stop task according to task id."""
         url = my_url_join(self.endpoint_task, rid)
         url = my_url_join(url, 'continue')
-        res = requests.put(url=url)
+        res = requests.put(url=url, timeout=TIMEOUT_SECONDS)
         if (res.status_code == 200):
             json = res.json()
             return ContinueATask_Response(**json)
@@ -151,7 +170,7 @@ class GospeedClient:
 
     def pause_all_tasks(self):
         """Palse every tasks inside Gospeed downloader."""
-        res = requests.put(self.endpoint_tasks_pause)
+        res = requests.put(url=self.endpoint_tasks_pause, timeout=TIMEOUT_SECONDS)
         if (res.status_code == 200):
             json = res.json()
             return PauseAllTasks_Response(**json)
@@ -161,7 +180,7 @@ class GospeedClient:
 
     def continue_all_tasks(self):
         """Continue every tasks inside Gospeed downloader."""
-        res = requests.put(self.endpoint_tasks_continue)
+        res = requests.put(url=self.endpoint_tasks_continue, timeout=TIMEOUT_SECONDS)
         if (res.status_code == 200):
             json = res.json()
             return ContinueAllTasks_Response(**json)

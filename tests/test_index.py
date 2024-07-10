@@ -6,7 +6,7 @@ import time
 # pylint: disable=C0415
 # prevent warning of non-top import statement
 
-class TestClassGospeedClientInstance:
+class TestClassGospeedClientInstanceSyncMethods:
     """Initialize object with api address."""
     client = GospeedClient('http://127.0.0.1:9999/')
 
@@ -14,13 +14,20 @@ class TestClassGospeedClientInstance:
         from gospeed_api.models.get_server_info import GetServerInfo_Response
 
         res: GetServerInfo_Response = self.client.get_server_info()
+        # If response.code property == 0, it means everything working fine.
         assert res.code == 0
   
     def test_get_task_list(self):
+        """Retrive all tasks info those corresponding to specified status"""
         from gospeed_api.models.get_task_list import GetTaskList_Response
         from gospeed_api.models import TASK_STATUS
 
-        data: GetTaskList_Response = self.client.get_task_list({TASK_STATUS.DONE})
+        data: GetTaskList_Response = self.client.get_task_list(status={TASK_STATUS.DONE}) 
+        # This method Receive a Set[Task_STATUS] as input, you could specify different status inside like:
+        # self.client.get_task_list({TASK_STATUS.DONE, TASK_STATUS.PAUSE}) to retrive multiple tasks info those have corresponding status.
+        # 
+        # If you want get every task info, just ignore status paramter, 
+        # like: self.client.get_task_list()
         assert data.code == 0
 
     def test_get_task_info(self):
@@ -28,20 +35,22 @@ class TestClassGospeedClientInstance:
         from gospeed_api.models.create_a_task import CreateATask_fromUrl, CreateATask_Response
         from gospeed_api.models.get_task_info import GetTaskInfo_Response
 
+        # Create a task from url
         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
         req = ResolveRequest_Response_Res_File_Req(url="https://example.com/index.html")
         data = CreateATask_fromUrl(req=req, opt=opt)
         task: CreateATask_Response = self.client.create_a_task_from_url(param=data)
         rid = task.data
-        # get_task_info in this case, the 'res' property will return None
-        task_info = self.client.get_task_info(rid=rid)
+        # use get_task_info method, the 'res' property inside Task_Meta Class will return None
+        task_info: GetTaskInfo_Response = self.client.get_task_info(rid=rid)
         assert task_info.code == 0
-        # delete task
+        # Retrive task info and check task status
         while True:
             time.sleep(2)
             task_info: GetTaskInfo_Response = self.client.get_task_info(rid=rid)
             if (task_info.data.status == TASK_STATUS.DONE):
                 break
+        # Detele task, force=True means delete file also.
         self.client.delete_a_task(rid=task_info.data.id, force=True)
 
     def test_resolve_a_request_create_a_task_from_resolved_info_and_delete_the_task(self):
@@ -98,10 +107,13 @@ class TestClassGospeedClientInstance:
         from gospeed_api.models import TASK_STATUS
         from gospeed_api.models.delete_a_task import DeleteATask_Response
 
+        # Define two target urls.
         url1 = TaskUrl(url='https://example.com/index.html')
         url2 = TaskUrl(url='https://example.com/index.html')
-
+        
+        # define download opt
         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
+        # Create download task
         tasks = CreateABatchOfTasks(reqs=[url1, url2], opt=opt)
         res_data: CreateABatchOfTasks_Response = self.client.create_a_batch_of_tasks(data=tasks)
         assert res_data.code == 0
