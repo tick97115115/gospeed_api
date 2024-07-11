@@ -4,7 +4,7 @@ This project provide Gospeed downloader RestAPI full-covered interacting.
 
 All  data model is type checked in runtime by using [Pydantic](https://docs.pydantic.dev/).
 
-**Async implementation will be add in version 2.0**.
+**🎉Async implementation is added in 2.0.0 Version, support both asyncio and [trio](https://github.com/python-trio/trio)!🎉**.
 
 ## install
 
