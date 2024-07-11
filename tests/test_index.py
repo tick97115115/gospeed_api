@@ -315,7 +315,7 @@ class TestClassAsyncGospeedClientInstance:
         assert res_data.code == 0
 
         while True:
-            time.sleep(2)
+            anyio.sleep(2)
             task1_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(res_data.data[0])
             task2_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(res_data.data[1])
             if (task1_info.data.status == TASK_STATUS.DONE and task2_info.data.status == TASK_STATUS.DONE):
