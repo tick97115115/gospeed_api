@@ -132,8 +132,8 @@ class TestClassGospeedClientInstance:
             task2_info: GetTaskInfo_Response = self.client.get_task_info(res_data.data[1])
             # check task status and delete them
             if (task1_info.data.status == TASK_STATUS.DONE and task2_info.data.status == TASK_STATUS.DONE):
-                task1_delete_res: DeleteATask_Response = self.client.delete_a_task(rid=res_data.data[0])
-                task2_delete_res: DeleteATask_Response = self.client.delete_a_task(rid=res_data.data[1])
+                task1_delete_res: DeleteATask_Response = self.client.delete_a_task(rid=res_data.data[0], force=True)
+                task2_delete_res: DeleteATask_Response = self.client.delete_a_task(rid=res_data.data[1], force=True)
                 # For avoid test exception, in here I delete them one by one, please take much care when use this function.
                 # delete all exists tasks, like below: 
                 # self.client.delete_tasks(status={TASK_STATUS.DONE, TASK_STATUS.ERROR}, force=True)
@@ -319,8 +319,8 @@ class TestClassAsyncGospeedClientInstance:
             task1_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(res_data.data[0])
             task2_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(res_data.data[1])
             if (task1_info.data.status == TASK_STATUS.DONE and task2_info.data.status == TASK_STATUS.DONE):
-                task1_delete_res: DeleteATask_Response = await self.async_client.async_delete_a_task(rid=res_data.data[0])
-                task2_delete_res: DeleteATask_Response = await self.async_client.async_delete_a_task(rid=res_data.data[1])
+                task1_delete_res: DeleteATask_Response = await self.async_client.async_delete_a_task(rid=res_data.data[0], force=True)
+                task2_delete_res: DeleteATask_Response = await self.async_client.async_delete_a_task(rid=res_data.data[1], force=True)
                 # For avoid test exception, in here I delete them one by one, please take much care when use this function.
                 # delete all exists tasks, like below: 
                 # await self.async_client.async_delete_tasks(status={TASK_STATUS.DONE, TASK_STATUS.ERROR}, force=True)
