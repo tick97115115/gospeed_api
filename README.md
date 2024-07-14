@@ -6,6 +6,12 @@ All  data model is type checked in runtime by using [Pydantic](https://docs.pyda
 
 **🎉Async implementation is added in 2.0.0 Version, support both asyncio and [trio](https://github.com/python-trio/trio)!🎉**.
 
+Please use the latest version (for now it's 2.0.4).
+
+Because in 2.0.2 there is a bug which handle url query parameter incorrectly, cause invoking delete endpoint to delete task and file failure!
+
+And It's already resolved in the newest version! ☝️🤓
+
 ## install
 
 pypi repo: https://pypi.org/project/gospeed_api/
