@@ -92,7 +92,7 @@ class GospeedClient:
 
     def delete_a_task(self, rid: str, force: bool = False) -> DeleteATask_Response:
         """Delete a task by specify it's id, force if true will delete the file also."""
-        res = requests.delete(url=my_url_join(self.endpoint_task, rid), params={'force': force}, timeout=TIMEOUT_SECONDS)
+        res = requests.delete(url=my_url_join(self.endpoint_task, rid), params={'force': str(force).lower()}, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return DeleteATask_Response(**json)
 
@@ -105,7 +105,7 @@ class GospeedClient:
     def delete_tasks(self, status: Set[TASK_STATUS] = None, force: bool = False) -> DeleteTasks_Response:
         """Delete tasks according to specified status."""
         query_paramter = construct_status_query_params(status)
-        query_paramter['force'] = force
+        query_paramter['force'] = str(force).lower()
         
         res = requests.delete(self.endpoint_task, params=query_paramter, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
