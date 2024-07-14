@@ -1,8 +1,13 @@
-# gospeed_api
+# Go~~s~~peed_api
 
-This project provide Gospeed downloader RestAPI full-covered interacting.
+This project provide [Go~~s~~peed downloader](https://gopeed.com/) RestAPI full-covered interacting.
 
-All  data model is type checked in runtime by using [Pydantic](https://docs.pydantic.dev/).
+> Sorry about that I made a mistake about its name. I realized that when I finished version 2.0.4;
+
+> 🎶~~It's too Laaaaate~ to Apologiiiiiize~, It's too Laaaaaaaaaaaate~~🎶
+
+
+All data model is type checked in runtime by using [Pydantic](https://docs.pydantic.dev/).
 
 **🎉Async implementation is added in 2.0.0 Version, support both asyncio and [trio](https://github.com/python-trio/trio)!🎉**.
 
