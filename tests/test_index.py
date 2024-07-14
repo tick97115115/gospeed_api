@@ -27,8 +27,8 @@ class TestClassGospeedClientInstance:
 
         data: GetTaskList_Response = self.client.get_task_list(status={TASK_STATUS.DONE}) 
         # This method Receive a Set[Task_STATUS] as input, you could specify different status inside like:
-        # self.client.get_task_list({TASK_STATUS.DONE, TASK_STATUS.PAUSE}) to retrive multiple tasks info those have corresponding status.
-        # 
+        # self.client.get_task_list({TASK_STATUS.DONE, TASK_STATUS.PAUSE}) # to retrive multiple tasks info those have corresponding status.
+        
         # If you want get every task info, just ignore status paramter, 
         # like: self.client.get_task_list()
         assert data.code == 0
@@ -131,9 +131,9 @@ class TestClassGospeedClientInstance:
             task1_info: GetTaskInfo_Response = self.client.get_task_info(res_data.data[0])
             task2_info: GetTaskInfo_Response = self.client.get_task_info(res_data.data[1])
             # check task status and delete them
-            if (task1_info.data.status == TASK_STATUS.DONE and task2_info.data.status == TASK_STATUS.DONE):
-                task1_delete_res: DeleteATask_Response = self.client.delete_a_task(rid=res_data.data[0], force=True)
-                task2_delete_res: DeleteATask_Response = self.client.delete_a_task(rid=res_data.data[1], force=True)
+            if (task1_info.data.status == TASK_STATUS.DONE and task2_info.data.status == TASK_STATUS.DONE and task1_info.data.id != task2_info.data.id):
+                task1_delete_res: DeleteATask_Response = self.client.delete_a_task(rid=task1_info.data.id, force=True)
+                task2_delete_res: DeleteATask_Response = self.client.delete_a_task(rid=task2_info.data.id, force=True)
                 # For avoid test exception, in here I delete them one by one, please take much care when use this function.
                 # delete all exists tasks, like below: 
                 # self.client.delete_tasks(status={TASK_STATUS.DONE, TASK_STATUS.ERROR}, force=True)
@@ -168,7 +168,7 @@ class TestClassGospeedClientInstance:
         res = self.client.get_task_info(rid=task_rid)
         assert res.data.status == TASK_STATUS.PAUSE
 
-        #continue a task
+        # continue a task
         time.sleep(2)
         res = self.client.continue_a_task(rid=task_rid)
         assert res.code == 0
