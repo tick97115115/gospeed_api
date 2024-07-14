@@ -384,7 +384,7 @@ class TestClassAsyncGospeedClientInstance:
         assert res.code == 0
 
 class TestClassGospeedClientInstance_DeleteAllTasks:
-    """Initialize object with api address."""
+    """Run this (delete all) test carefully!!!!!! please check your exist download tasks before you run it!!!!!!"""
     client = GospeedClient('http://127.0.0.1:9999/')
 
     def test_delete_all_tasks(self):
@@ -414,7 +414,7 @@ class TestClassGospeedClientInstance_DeleteAllTasks:
         assert len(res.data) == 0
 
 class TestClassAsyncGospeedClientInstance_DeleteAllTasks:
-    """Initialize object with api address."""
+    """Run this (delete all) test carefully!!!!!! please check your exist download tasks before you run it!!!!!!"""
     async_client = AsyncGospeedClient('http://127.0.0.1:9999/')
 
     async def test_async_delete_all_tasks(self):
