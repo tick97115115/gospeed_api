@@ -239,7 +239,7 @@ class TestClassAsyncGospeedClientInstance:
         assert task_info.code == 0
         # Retrive task info and check task status
         while True:
-            anyio.sleep(2)
+            await anyio.sleep(2)
             task_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(rid=rid)
             if (task_info.data.status == TASK_STATUS.DONE):
                 break
@@ -266,7 +266,7 @@ class TestClassAsyncGospeedClientInstance:
         
         # Get task info and checking status
         while True:
-            anyio.sleep(2)
+            await anyio.sleep(2)
             task_info = await self.async_client.async_get_task_info(rid=task.data)
             if (task_info.data.status == TASK_STATUS.DONE):
                 break
@@ -288,7 +288,7 @@ class TestClassAsyncGospeedClientInstance:
         # print(f"task_id: {task.data}") # task id
         # delete task
         while True:
-            anyio.sleep(2)
+            await anyio.sleep(2)
             task_info = await self.async_client.async_get_task_info(rid=task.data)
             if (task_info.data.status == TASK_STATUS.DONE):
                 break
@@ -315,7 +315,7 @@ class TestClassAsyncGospeedClientInstance:
         assert res_data.code == 0
 
         while True:
-            anyio.sleep(2)
+            await anyio.sleep(2)
             task1_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(res_data.data[0])
             task2_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(res_data.data[1])
             if (task1_info.data.status == TASK_STATUS.DONE and task2_info.data.status == TASK_STATUS.DONE):
@@ -342,40 +342,40 @@ class TestClassAsyncGospeedClientInstance:
         data = CreateATask_fromUrl(req=req, opt=opt)
         task = await self.async_client.async_create_a_task_from_url(data)
         assert task.code == 0
-        anyio.sleep(1)
+        await anyio.sleep(1)
         task_rid = task.data
         res = await self.async_client.async_get_task_info(rid=task_rid)
         assert res.data.status == TASK_STATUS.RUNNING
 
         # pause a task
-        anyio.sleep(2)
+        await anyio.sleep(2)
         res = await self.async_client.async_pause_a_task(rid=task_rid)
         assert res.code == 0
-        anyio.sleep(1)
+        await anyio.sleep(1)
         res = await self.async_client.async_get_task_info(rid=task_rid)
         assert res.data.status == TASK_STATUS.PAUSE
 
         #continue a task
-        anyio.sleep(2)
+        await anyio.sleep(2)
         res = await self.async_client.async_continue_a_task(rid=task_rid)
         assert res.code == 0
-        anyio.sleep(1)
+        await anyio.sleep(1)
         res = await self.async_client.async_get_task_info(rid=task_rid)
         assert res.data.status == TASK_STATUS.RUNNING
 
         # pause all tasks
-        anyio.sleep(2)
+        await anyio.sleep(2)
         res = await self.async_client.async_pause_all_tasks()
         assert res.code == 0
-        anyio.sleep(1)
+        await anyio.sleep(1)
         res = await self.async_client.async_get_task_info(rid=task_rid)
         assert res.data.status == TASK_STATUS.PAUSE
 
         # continue all tasks
-        anyio.sleep(2)
+        await anyio.sleep(2)
         res = await self.async_client.async_continue_all_tasks()
         assert res.code == 0
-        anyio.sleep(1)
+        await anyio.sleep(1)
         res = await self.async_client.async_get_task_info(rid=task_rid)
         assert res.data.status == TASK_STATUS.RUNNING
 
@@ -430,14 +430,14 @@ class TestClassAsyncGospeedClientInstance_DeleteAllTasks:
         data = CreateATask_fromUrl(req=req, opt=opt)
         task = await self.async_client.async_create_a_task_from_url(data)
         assert task.code == 0
-        anyio.sleep(1)
+        await anyio.sleep(1)
         task_rid = task.data
         res = self.async_client.get_task_info(rid=task_rid)
         assert res.data.status == TASK_STATUS.RUNNING
 
         # invoke delete all tasks api
         await self.async_client.async_delete_tasks(force=True) # leave status param to None, means delete all tasks inside downloader no matter what status it is.
-        anyio.sleep(1)
+        await anyio.sleep(1)
 
         # check if have any task exists
         res = await self.async_client.async_get_task_list()
