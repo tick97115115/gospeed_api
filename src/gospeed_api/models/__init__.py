@@ -46,7 +46,7 @@ class ResolveRequest_Response_Res_File(BaseModel):
     name: str
     path: str
     size: int
-    ctime: str # ISO8601 UTC 
+    ctime: str | None # ISO8601 UTC 
     # req: None
 
 class ResolveRequest_Response_Res(BaseModel):
