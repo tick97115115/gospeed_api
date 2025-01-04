@@ -19,13 +19,17 @@ And It's already resolved in the newest version! ☝️🤓
 
 ## install
 
-pypi repo: https://pypi.org/project/gospeed_api/
+pypi repo: https://pypi.org/project/gospeed-api/
 
 ```powershell
-pip install gospeed_api
+pip install gospeed-api
 ```
 
 ## Usage Example
 
 Every usage example is written in test file, for more detail please take a look: [test_index.py](./tests/test_index.py)
 
+## The future improvements were on plan
+
+1. I was supposed to use Pydantic from the beginning to help with input validation, but it caused too many unnecessary statements to be written. So the next major update will have some breaking changes.
+2. Add error response message check function.
