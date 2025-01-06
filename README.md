@@ -6,12 +6,11 @@ This project provide [Go~~s~~peed downloader](https://gopeed.com/) RestAPI full-
 
 > 🎶~~It's too Laaaaate~ to Apologiiiiiize~, It's too Laaaaaaaaaaaate~~🎶
 
-
-All data model is type checked in runtime by using [Pydantic](https://docs.pydantic.dev/).
+Every function's input and output will get type checking in runtime by using [Pydantic](https://docs.pydantic.dev/).
 
 **🎉Async implementation is added in 2.0.0 Version, support both asyncio and [trio](https://github.com/python-trio/trio)!🎉**.
 
-Please use the latest version (for now it's 2.0.4).
+Please use the latest version.
 
 Because in 2.0.2 there is a bug which handle url query parameter incorrectly, cause invoking delete endpoint to delete task and file failure!
 
@@ -31,5 +30,9 @@ Every usage example is written in test file, for more detail please take a look:
 
 ## The future improvements were on plan
 
-1. I was supposed to use Pydantic from the beginning to help with input validation, but it caused too many unnecessary statements to be written. So the next major update will have some breaking changes.
-2. Add error response message check function.
+2025/1/6/
+
+1. After a few months at the end of development, I'm supposed to rewrite the usage guide. Because recently, when I was trying to write some script based on this library, I could feel there was not enough introduction to make things clear for the user.
+2. Update to version 3.0.0. This major update will create a new implementation with a more intuitive usage experience.
+
+I'm starting achiving these two objectives from the day I wrote above.
