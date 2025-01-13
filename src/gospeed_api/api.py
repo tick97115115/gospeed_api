@@ -31,7 +31,7 @@ def check_response_and_return_data(res: httpx.Response) -> Dict:
     if (res.status_code == 200):
         return res.json()
     res.raise_for_status()
-    return None
+    # return None
 
 TIMEOUT_SECONDS: int = 8
 
@@ -58,93 +58,185 @@ class GospeedAPI:
         self.endpoint_tasks_pause = urljoin(self.gopeed_hostname, 'api/v1/tasks/pause')
         self.endpoint_tasks_continue = urljoin(self.gopeed_hostname, 'api/v1/tasks/continue')
 
-    def get_server_info(self) -> GetServerInfo_Response:
+    def get_server_info(
+        self,
+        httpx_client: httpx.Client
+    ) -> GetServerInfo_Response:
         """Return Gospeed server info"""
-        res = requests.get(url=self.endpoint_info, timeout=TIMEOUT_SECONDS)
+        res = httpx_client.get(url=self.endpoint_info)
+        json = check_response_and_return_data(res)
+        return GetServerInfo_Response(**json)
+
+    async def async_get_server_info(
+        self,
+        httpx_async_client: httpx.AsyncClient
+    ) -> GetServerInfo_Response:
+        """Return Gospeed server info"""
+        res = await httpx_async_client.get(url=self.endpoint_info)
         json = check_response_and_return_data(res)
         return GetServerInfo_Response(**json)
         
-    def resolve_a_request(self, param: ResolveRequest) -> ResolveRequest_Response:
+    def resolve_a_request(self, httpx_client: httpx.Client, param: ResolveRequest) -> ResolveRequest_Response:
         """resolve request link and return ResolveRequest_Response data model object."""
-        res = requests.post(url=self.endpoint_resolve, data=param.model_dump_json(), headers={"content-type": "application/json", "accept": "application/json"}, timeout=TIMEOUT_SECONDS)
+        res = httpx_client.post(url=self.endpoint_resolve, json=param.model_dump_json(), headers={"content-type": "application/json", "accept": "application/json"}, timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return ResolveRequest_Response(**json)
+    
+    async def async_resolve_a_request(self, httpx_async_client: httpx.AsyncClient, param: ResolveRequest) -> ResolveRequest_Response:
+        """resolve request link and return ResolveRequest_Response data model object."""
+        res = await httpx_async_client.post(url=self.endpoint_resolve, json=param.model_dump_json(), headers={"content-type": "application/json", "accept": "application/json"}, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return ResolveRequest_Response(**json)
 
-    def get_task_list(self, status: Set[TASK_STATUS] = None) -> GetTaskList_Response:
+    def get_task_list(self, httpx_client: httpx.Client, status: Set[TASK_STATUS] = None) -> GetTaskList_Response:
         """Get all tasks according to specified status."""
         query_paramter=construct_status_query_params(status=status)
 
-        res = requests.get(url=self.endpoint_task, params=query_paramter, headers={'accept': 'application/json'}, timeout=TIMEOUT_SECONDS)
+        res = httpx_client.get(url=self.endpoint_task, params=query_paramter, headers={'accept': 'application/json'}, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return GetTaskList_Response(**json)
 
-    def create_a_task_from_resolved_id(self, param: CreateATask_fromResolvedId) -> CreateATask_Response:
+    async def async_get_task_list(self, httpx_async_client: httpx.AsyncClient, status: Set[TASK_STATUS] = None) -> GetTaskList_Response:
+        """Get all tasks according to specified status."""
+        query_paramter=construct_status_query_params(status=status)
+
+        res = await httpx_async_client.get(url=self.endpoint_task, params=query_paramter, headers={'accept': 'application/json'}, timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return GetTaskList_Response(**json)
+
+    def create_a_task_from_resolved_id(self, httpx_client: httpx.Client, param: CreateATask_fromResolvedId) -> CreateATask_Response:
         r"""receive CreateATask_fromResolvedId object as paramter. see src\gospeed_api\models\create_a_task.py for detail return data structure."""
-        res = requests.post(url=self.endpoint_task, headers={"accept": "application/json", "content-type": "application/json"}, data=param.model_dump_json(), timeout=TIMEOUT_SECONDS)
+        res = httpx_client.post(url=self.endpoint_task, headers={"accept": "application/json", "content-type": "application/json"}, json=param.model_dump_json(), timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return CreateATask_Response(**json)
+    
+    async def async_create_a_task_from_resolved_id(self, httpx_async_client: httpx.AsyncClient, param: CreateATask_fromResolvedId) -> CreateATask_Response:
+        r"""receive CreateATask_fromResolvedId object as paramter. see src\gospeed_api\models\create_a_task.py for detail return data structure."""
+        res = await httpx_async_client.post(url=self.endpoint_task, headers={"accept": "application/json", "content-type": "application/json"}, json=param.model_dump_json(), timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return CreateATask_Response(**json)
 
-    def create_a_task_from_url(self, param: CreateATask_fromUrl) -> CreateATask_Response:
+    def create_a_task_from_url(self, httpx_client: httpx.Client, param: CreateATask_fromUrl) -> CreateATask_Response:
         """Directly create a task instead of resolve it's information first."""
-        res = requests.post(self.endpoint_task, headers={"accept": "application/json", "content-type": "application/json"}, data=param.model_dump_json(), timeout=TIMEOUT_SECONDS)
+        res = httpx_client.post(self.endpoint_task, headers={"accept": "application/json", "content-type": "application/json"}, json=param.model_dump_json(), timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return CreateATask_Response(**json)
 
-    def delete_a_task(self, rid: str, force: bool = False) -> DeleteATask_Response:
+    async def async_create_a_task_from_url(self, httpx_async_client: httpx.AsyncClient, param: CreateATask_fromUrl) -> CreateATask_Response:
+        """Directly create a task instead of resolve it's information first."""
+        res = await httpx_async_client.post(self.endpoint_task, headers={"accept": "application/json", "content-type": "application/json"}, json=param.model_dump_json(), timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return CreateATask_Response(**json)
+
+    def delete_a_task(self, httpx_client: httpx.Client, rid: str, force: bool = False) -> DeleteATask_Response:
         """Delete a task by specify it's id, force if true will delete the file also."""
-        res = requests.delete(url=my_url_join(self.endpoint_task, rid), params={'force': str(force).lower()}, timeout=TIMEOUT_SECONDS)
+        res = httpx_client.delete(url=my_url_join(self.endpoint_task, rid), params={'force': str(force).lower()}, timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return DeleteATask_Response(**json)
+    
+    async def async_delete_a_task(self, httpx_async_client: httpx.AsyncClient, rid: str, force: bool = False) -> DeleteATask_Response:
+        """Delete a task by specify it's id, force if true will delete the file also."""
+        res = await httpx_async_client.delete(url=my_url_join(self.endpoint_task, rid), params={'force': str(force).lower()}, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return DeleteATask_Response(**json)
 
-    def create_a_batch_of_tasks(self, data: CreateABatchOfTasks) -> CreateABatchOfTasks_Response:
+    def create_a_batch_of_tasks(self, httpx_client: httpx.Client, data: CreateABatchOfTasks) -> CreateABatchOfTasks_Response:
         """Create multiple tasks at once."""
-        res = requests.post(self.endpoint_task_batch, headers={"accept": "application/json", "content-type": "application/json"}, data=data.model_dump_json(), timeout=TIMEOUT_SECONDS)
+        res = httpx_client.post(self.endpoint_task_batch, headers={"accept": "application/json", "content-type": "application/json"}, json=data.model_dump_json(), timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return CreateABatchOfTasks_Response(**json)
+    
+    async def async_create_a_batch_of_tasks(self, httpx_async_client: httpx.AsyncClient, data: CreateABatchOfTasks) -> CreateABatchOfTasks_Response:
+        """Create multiple tasks at once."""
+        res = await httpx_async_client.post(self.endpoint_task_batch, headers={"accept": "application/json", "content-type": "application/json"}, json=data.model_dump_json(), timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return CreateABatchOfTasks_Response(**json)
 
-    def delete_tasks(self, status: Set[TASK_STATUS] = None, force: bool = False) -> DeleteTasks_Response:
+    def delete_tasks(self, httpx_client: httpx.Client, status: Set[TASK_STATUS] = None, force: bool = False) -> DeleteTasks_Response:
         """Delete tasks according to specified status."""
         query_paramter = construct_status_query_params(status)
         query_paramter['force'] = str(force).lower()
         
-        res = requests.delete(self.endpoint_task, params=query_paramter, timeout=TIMEOUT_SECONDS)
+        res = httpx_client.delete(self.endpoint_task, params=query_paramter, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return DeleteTasks_Response(**json)
 
-    def get_task_info(self, rid: str) -> GetTaskInfo_Response:
+    async def async_delete_tasks(self, httpx_async_client: httpx.AsyncClient, status: Set[TASK_STATUS] = None, force: bool = False) -> DeleteTasks_Response:
+        """Delete tasks according to specified status."""
+        query_paramter = construct_status_query_params(status)
+        query_paramter['force'] = str(force).lower()
+        
+        res = await httpx_async_client.delete(self.endpoint_task, params=query_paramter, timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return DeleteTasks_Response(**json)
+
+    def get_task_info(self, httpx_client: httpx.Client, rid: str) -> GetTaskInfo_Response:
         """Get a task info from it's id."""
-        res = requests.get(url=my_url_join(self.endpoint_task, rid), headers={"accept": "application/json"}, timeout=TIMEOUT_SECONDS)
+        res = httpx_client.get(url=my_url_join(self.endpoint_task, rid), headers={"accept": "application/json"}, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return GetTaskInfo_Response(**json)
 
-    def pause_a_task(self, rid: str) -> PauseATask_Response:
+    async def async_get_task_info(self, httpx_async_client: httpx.AsyncClient, rid: str) -> GetTaskInfo_Response:
+        """Get a task info from it's id."""
+        res = await httpx_async_client.get(url=my_url_join(self.endpoint_task, rid), headers={"accept": "application/json"}, timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return GetTaskInfo_Response(**json)
+
+    def pause_a_task(self, httpx_client: httpx.Client, rid: str) -> PauseATask_Response:
         """Pause a task download according to task id."""
         url = my_url_join(self.endpoint_task, rid)
         url = my_url_join(url, 'pause')
-        res = requests.put(url=url, timeout=TIMEOUT_SECONDS)
+        res = httpx_client.put(url=url, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return PauseATask_Response(**json)
 
-    def continue_a_task(self, rid: str) -> ContinueATask_Response:
+    async def async_pause_a_task(self, httpx_async_client: httpx.AsyncClient, rid: str) -> PauseATask_Response:
+        """Pause a task download according to task id."""
+        url = my_url_join(self.endpoint_task, rid)
+        url = my_url_join(url, 'pause')
+        res = await httpx_async_client.put(url=url, timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return PauseATask_Response(**json)
+
+    def continue_a_task(self, httpx_client: httpx.Client, rid: str) -> ContinueATask_Response:
         """Continue a stop task according to task id."""
         url = my_url_join(self.endpoint_task, rid)
         url = my_url_join(url, 'continue')
-        res = requests.put(url=url, timeout=TIMEOUT_SECONDS)
+        res = httpx_client.put(url=url, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return ContinueATask_Response(**json)
 
-    def pause_all_tasks(self) -> PauseAllTasks_Response:
+    async def async_continue_a_task(self, httpx_async_client: httpx.AsyncClient, rid: str) -> ContinueATask_Response:
+        """Continue a stop task according to task id."""
+        url = my_url_join(self.endpoint_task, rid)
+        url = my_url_join(url, 'continue')
+        res = await httpx_async_client.put(url=url, timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return ContinueATask_Response(**json)
+
+    def pause_all_tasks(self, httpx_client: httpx.Client) -> PauseAllTasks_Response:
         """Palse every tasks inside Gospeed downloader."""
-        res = requests.put(url=self.endpoint_tasks_pause, timeout=TIMEOUT_SECONDS)
+        res = httpx_client.put(url=self.endpoint_tasks_pause, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return PauseAllTasks_Response(**json)
 
-    def continue_all_tasks(self) -> ContinueAllTasks_Response:
+    async def async_pause_all_tasks(self, httpx_async_client: httpx.AsyncClient) -> PauseAllTasks_Response:
+        """Palse every tasks inside Gospeed downloader."""
+        res = await httpx_async_client.put(url=self.endpoint_tasks_pause, timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return PauseAllTasks_Response(**json)
+
+    def continue_all_tasks(self, httpx_client: httpx.Client) -> ContinueAllTasks_Response:
         """Continue every tasks inside Gospeed downloader."""
-        res = requests.put(url=self.endpoint_tasks_continue, timeout=TIMEOUT_SECONDS)
+        res = httpx_client.put(url=self.endpoint_tasks_continue, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return ContinueAllTasks_Response(**json)
 
+    async def continue_all_tasks(self, httpx_async_client: httpx.AsyncClient) -> ContinueAllTasks_Response:
+        """Continue every tasks inside Gospeed downloader."""
+        res = await httpx_async_client.put(url=self.endpoint_tasks_continue, timeout=TIMEOUT_SECONDS)
+        json = check_response_and_return_data(res)
+        return ContinueAllTasks_Response(**json)
 
 class GospeedClient:
     """This class represent Gospeed Rest API interface, initializing with Gospeed API address."""
