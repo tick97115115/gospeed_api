@@ -2,11 +2,12 @@ from gospeed_api.index import GospeedClient, AsyncGospeedClient
 import tempfile
 import time
 import anyio
+from gospeed_api.api import GospeedAPI
 
+import pytest
+pytestmark = pytest.mark.anyio
 
 # For example showcase, I will write import statement inside test method.
-# pylint: disable=C0415
-# prevent warning of non-top import statement
 
 class TestClassGospeedClientInstance:
     """Initialize object with api address."""
@@ -196,9 +197,6 @@ class TestClassGospeedClientInstance:
         res = self.client.delete_a_task(rid=task_rid, force=True)
         assert res.code == 0
 
-
-import pytest
-pytestmark = pytest.mark.anyio
 class TestClassAsyncGospeedClientInstance:
     """Initialize object with api address."""
     async_client = AsyncGospeedClient('http://127.0.0.1:9999/')
@@ -442,3 +440,6 @@ class TestClassAsyncGospeedClientInstance_DeleteAllTasks:
         # check if have any task exists
         res = await self.async_client.async_get_task_list()
         assert len(res.data) == 0
+
+class TestClassGospeedAPIInstance:
+    api = GospeedAPI(gopeed_hostname="http://127.0.0.1:9999")

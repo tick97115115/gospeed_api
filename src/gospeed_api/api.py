@@ -46,7 +46,7 @@ def construct_status_query_params(status: Set[TASK_STATUS] | None) -> Dict:
 class GospeedAPI:
     """This class represent Gospeed Rest API interface, initializing with Gospeed API address."""
 
-    def __init__(self, gopeed_hostname) -> None:
+    def __init__(self, gopeed_hostname: str) -> None:
         # prevent string conjunction bug while using urllib.parse.urljoin()
         if (gopeed_hostname[-1] != '/'):
             gopeed_hostname = gopeed_hostname + '/'
