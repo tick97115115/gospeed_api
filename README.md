@@ -3,7 +3,6 @@
 This project provide [Go~~s~~peed downloader](https://gopeed.com/) RestAPI full-covered interacting.
 
 > Sorry about that I made a mistake about its name. I realized that when I finished version 2.0.4;
-
 > 🎶~~It's too Laaaaate~ to Apologiiiiiize~, It's too Laaaaaaaaaaaate~~🎶
 
 Every function's input and output will get type checking in runtime by using [Pydantic](https://docs.pydantic.dev/).
@@ -18,7 +17,7 @@ And It's already resolved in the newest version! ☝️🤓
 
 ## install
 
-pypi repo: https://pypi.org/project/gospeed-api/
+gospeed-api package [address](https://pypi.org/project/gospeed-api/).
 
 ```powershell
 pip install gospeed-api
@@ -36,3 +35,9 @@ Every usage example is written in test file, for more detail please take a look:
 2. Update to version 3.0.0. This major update will create a new implementation with a more intuitive usage experience.
 
 I'm starting achiving these two objectives from the day I wrote above.
+
+---
+
+2025/2/22/
+
+Now AsyncGospeedClient have an optional init paramter "httpx_async_client" to receive customized async httpx client object to send requests.

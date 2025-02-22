@@ -28,10 +28,10 @@ def my_url_join(first: str, last: str) -> str:
 
 def check_response_and_return_data(res: httpx.Response) -> Dict:
     """check response status code then return json data"""
-    if (res.status_code == 200):
-        return res.json()
-    res.raise_for_status()
-    return None
+    if (res.status_code != 200):
+        response = res.raise_for_status()
+        return response.__dict__
+    return res.json()
 
 TIMEOUT_SECONDS: int = 8
 
@@ -70,7 +70,7 @@ class GospeedClient:
         json = check_response_and_return_data(res)
         return ResolveRequest_Response(**json)
 
-    def get_task_list(self, status: Set[TASK_STATUS] = None) -> GetTaskList_Response:
+    def get_task_list(self, status: Set[TASK_STATUS] | None = None) -> GetTaskList_Response:
         """Get all tasks according to specified status."""
         query_paramter=construct_status_query_params(status=status)
 
@@ -102,7 +102,7 @@ class GospeedClient:
         json = check_response_and_return_data(res)
         return CreateABatchOfTasks_Response(**json)
 
-    def delete_tasks(self, status: Set[TASK_STATUS] = None, force: bool = False) -> DeleteTasks_Response:
+    def delete_tasks(self, status: Set[TASK_STATUS] | None = None, force: bool = False) -> DeleteTasks_Response:
         """Delete tasks according to specified status."""
         query_paramter = construct_status_query_params(status)
         query_paramter['force'] = str(force).lower()
@@ -147,9 +147,9 @@ class GospeedClient:
 
 class AsyncGospeedClient(GospeedClient):
     """Async implementation"""
-    def __init__(self, url: str) -> None:
+    def __init__(self, url: str, httpx_async_client: httpx.AsyncClient = httpx.AsyncClient()) -> None:
         super().__init__(url)
-        self.httpx_client = httpx.AsyncClient()
+        self.httpx_client = httpx_async_client
 
     def __del__(self):
         # self.httpx_client.close()
@@ -168,7 +168,7 @@ class AsyncGospeedClient(GospeedClient):
         json = check_response_and_return_data(res)
         return ResolveRequest_Response(**json)
     
-    async def async_get_task_list(self, status: Set[TASK_STATUS] = None) -> GetTaskList_Response:
+    async def async_get_task_list(self, status: Set[TASK_STATUS] | None = None) -> GetTaskList_Response:
         """Async implementation of get_task_list."""
         query_paramter = construct_status_query_params(status)
         res = await self.httpx_client.get(url=self.endpoint_task, params=query_paramter, headers={'accept': 'application/json'}, timeout=TIMEOUT_SECONDS)
@@ -199,7 +199,7 @@ class AsyncGospeedClient(GospeedClient):
         json = check_response_and_return_data(res)
         return CreateABatchOfTasks_Response(**json)
     
-    async def async_delete_tasks(self, status: Set[TASK_STATUS] = None, force: bool = False) -> DeleteTasks_Response:
+    async def async_delete_tasks(self, status: Set[TASK_STATUS] | None = None, force: bool = False) -> DeleteTasks_Response:
         """Async implementation of delete_tasks."""
         query_paramter = construct_status_query_params(status)
         query_paramter['force'] = force
@@ -235,7 +235,7 @@ class AsyncGospeedClient(GospeedClient):
         json = check_response_and_return_data(res)
         return PauseAllTasks_Response(**json)
     
-    async def async_continue_all_tasks(self) -> PauseAllTasks_Response:
+    async def async_continue_all_tasks(self) -> ContinueAllTasks_Response:
         """Async implementation of continue_all_tasks."""
         res = await self.httpx_client.put(url=self.endpoint_tasks_continue, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)

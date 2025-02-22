@@ -1,8 +1,7 @@
-from gospeed_api.index import GospeedClient, AsyncGospeedClient
+from src.gospeed_api.index import GospeedClient, AsyncGospeedClient
 import tempfile
 import time
 import anyio
-from gospeed_api.api import GospeedAPI
 
 import pytest
 pytestmark = pytest.mark.anyio
@@ -440,6 +439,3 @@ class TestClassAsyncGospeedClientInstance_DeleteAllTasks:
         # check if have any task exists
         res = await self.async_client.async_get_task_list()
         assert len(res.data) == 0
-
-class TestClassGospeedAPIInstance:
-    api = GospeedAPI(gopeed_hostname="http://127.0.0.1:9999")
