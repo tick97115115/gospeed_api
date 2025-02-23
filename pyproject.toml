@@ -1,6 +1,6 @@
 [project]
 name = "gospeed-api"
-version = "2.1.1"
+version = "2.1.2"
 description = "Default template for PDM package"
 authors = [
     {name = "tick97115115", email = "32931796+tick97115115@users.noreply.github.com"},

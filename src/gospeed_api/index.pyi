@@ -11,7 +11,7 @@ from .models.get_task_list import GetTaskList_Response as GetTaskList_Response
 from .models.pause_a_task import PauseATask_Response as PauseATask_Response
 from .models.pause_all_tasks import PauseAllTasks_Response as PauseAllTasks_Response
 from .models.resolve_a_request import ResolveRequest as ResolveRequest, ResolveRequest_Response as ResolveRequest_Response
-from _typeshed import Incomplete
+from _typeshed import Incomplete as Incomplete
 from gospeed_api.models.delete_tasks import DeleteTasks_Response as DeleteTasks_Response
 
 def my_url_join(first: str, last: str) -> str: ...
