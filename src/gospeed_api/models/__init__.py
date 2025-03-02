@@ -2,7 +2,7 @@ from typing import List, Optional, Dict
 from pydantic import BaseModel
 from enum import Enum
 
-class HTTP_METHODS(Enum):
+class HTTP_METHODS(str, Enum):
     GET = 'GET'
     POST = 'POST'
     PUT = 'PUT'
@@ -18,7 +18,7 @@ class HTTP_METHODS(Enum):
     def  __repr__(self) -> str:
         return self.value
 
-class TASK_STATUS(Enum):
+class TASK_STATUS(str, Enum):
     READY = 'ready'
     RUNNING = 'running'
     PAUSE = 'pause'
