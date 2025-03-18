@@ -290,7 +290,7 @@ class GopeedAPI:
     async def async_get_task_list(self, status: Set[TASK_STATUS] | None = None) -> GetTaskList_Response:
         """Async implementation of get_task_list."""
         query_paramter = construct_status_query_params(status)
-        res = await self.httpx_client.get(url=self.endpoint_task, params=query_paramter, headers={'accept': 'application/json'}, timeout=TIMEOUT_SECONDS)
+        res = await self.async_httpx_client.get(url=self.endpoint_task, params=query_paramter, headers={'accept': 'application/json'}, timeout=TIMEOUT_SECONDS)
         json = check_response_and_return_data(res)
         return GetTaskList_Response(**json)
 
