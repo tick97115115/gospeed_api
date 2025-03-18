@@ -1,13 +1,14 @@
-from . import CreateTask_DownloadOpt, ResolveRequest_Response_Res_File_Req
+from .resolve_a_request import ResolveRequest
 from pydantic import BaseModel
+from . import CreateTask_DownloadOpt
 
 class CreateATask_fromResolvedId(BaseModel):
     rid: str
-    opt: CreateTask_DownloadOpt
+    opt: CreateTask_DownloadOpt | None = None
 
-class CreateATask_fromUrl(BaseModel):
-    req: ResolveRequest_Response_Res_File_Req
-    opt: CreateTask_DownloadOpt
+class CreateATask_FromUrl(BaseModel):
+    req: ResolveRequest
+    opt: CreateTask_DownloadOpt | None = None
 
 class CreateATask_Response(BaseModel):
     code: int

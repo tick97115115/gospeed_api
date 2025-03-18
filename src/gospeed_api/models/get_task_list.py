@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from . import CreateTask_DownloadOpt, ResolveRequest_Response_Res, ResolveRequest_Response_Res_File_Req, TASK_STATUS
+from . import CreateTask_DownloadOpt, ResolveRequest_Response_Res, TASK_STATUS
+from .resolve_a_request import ResolveRequest
 
 class Task_Progress(BaseModel):
     used: int
@@ -10,7 +11,7 @@ class Task_Progress(BaseModel):
 class Task_Meta(BaseModel):
     opts: CreateTask_DownloadOpt
     res: Optional[ResolveRequest_Response_Res]
-    req: ResolveRequest_Response_Res_File_Req
+    req: ResolveRequest
 
 class Task(BaseModel):
     id: str

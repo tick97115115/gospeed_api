@@ -1,8 +1,8 @@
 from typing import List, Optional, Dict
 from pydantic import BaseModel
-from enum import Enum
+from enum import StrEnum
 
-class HTTP_METHODS(str, Enum):
+class HTTP_METHODS(StrEnum):
     GET = 'GET'
     POST = 'POST'
     PUT = 'PUT'
@@ -13,12 +13,7 @@ class HTTP_METHODS(str, Enum):
     CONNECT = 'CONNECT'
     TRACE = 'TRACE'
 
-    def __str__(self) -> str:
-        return self.value
-    def  __repr__(self) -> str:
-        return self.value
-
-class TASK_STATUS(str, Enum):
+class TASK_STATUS(StrEnum):
     READY = 'ready'
     RUNNING = 'running'
     PAUSE = 'pause'
@@ -26,21 +21,11 @@ class TASK_STATUS(str, Enum):
     ERROR = 'error'
     DONE = 'done'
 
-    def __str__(self) -> str:
-        return self.value
-    def  __repr__(self) -> str:
-        return self.value
-  
 class Request_Extra_Opt(BaseModel):
     methed: Optional[HTTP_METHODS] = None
     header: Optional[Dict[str, str]] = None
     body: Optional[str] = None
     trackers: Optional[List[str]] = None
-
-class ResolveRequest_Response_Res_File_Req(BaseModel):
-    url: str
-    extra: Optional[Request_Extra_Opt] = None
-    labels: Optional[Dict[str, str]] = None
 
 class ResolveRequest_Response_Res_File(BaseModel):
     name: str
@@ -67,6 +52,6 @@ class CreateTask_DownloadOpt_Extra(BaseModel):
 class CreateTask_DownloadOpt(BaseModel):
     name: Optional[str] = None
     path: Optional[str] = None
-    selectFiles: List[int] = [0]
+    selectFiles: List[int] | None = None
     extra: CreateTask_DownloadOpt_Extra = CreateTask_DownloadOpt_Extra(connections=16)
   

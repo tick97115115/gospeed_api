@@ -5,7 +5,7 @@ from pydantic import BaseModel
 class ResolveRequest(BaseModel):
     url: str
     extra: Optional[Request_Extra_Opt] = None
-    lables: Optional[Dict[str, str]] = None
+    labels: Optional[Dict[str, str]] = None
 
 class ResolveRequest_Response(BaseModel):
     code: int

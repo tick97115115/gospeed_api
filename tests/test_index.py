@@ -1,4 +1,4 @@
-from src.gospeed_api.index import GospeedClient, AsyncGospeedClient
+from src.gospeed_api.index import GospeedAPI
 import tempfile
 import time
 import anyio
@@ -7,6 +7,14 @@ import pytest
 pytestmark = pytest.mark.anyio
 
 # For example showcase, I will write import statement inside test method.
+
+@pytest.fixture
+def api_client():
+    return GospeedAPI()
+
+class TestGospeedAPI:
+    pass
+
 
 class TestClassGospeedClientInstance:
     """Initialize object with api address."""
@@ -89,13 +97,13 @@ class TestClassGospeedClientInstance:
         assert delete_response.code == 0
     
     def test_create_a_request_from_url(self):
-        from gospeed_api.models.create_a_task import CreateTask_DownloadOpt, CreateATask_fromUrl
-        from gospeed_api.models import ResolveRequest_Response_Res_File_Req, TASK_STATUS
+        from gospeed_api.models.create_a_task import CreateTask_DownloadOpt, CreateATask_FromUrl
+        from gospeed_api.models import ResolveRequest, TASK_STATUS
 
         # create download task from url
         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-        req = ResolveRequest_Response_Res_File_Req(url='https://example.com/index.html')
-        data = CreateATask_fromUrl(req=req, opt=opt)
+        req = ResolveRequest(url='https://example.com/index.html')
+        data = CreateATask_FromUrl(req=req, opt=opt)
         task = self.client.create_a_task_from_url(param=data)
         assert task.code == 0
         # print(f"task_id: {task.data}") # task id
@@ -145,14 +153,14 @@ class TestClassGospeedClientInstance:
         """test pause one/every and continue one/every task function."""
         # http://speedtest.tele2.net/ used for speed test by download big file.
         # http://speedtest.tele2.net/100MB.zip this is what I used.
-        from gospeed_api.models import ResolveRequest_Response_Res_File_Req
+        from gospeed_api.models import ResolveRequest
         from gospeed_api.models import TASK_STATUS, CreateTask_DownloadOpt
-        from gospeed_api.models.create_a_task import CreateATask_fromUrl
+        from gospeed_api.models.create_a_task import CreateATask_FromUrl
 
         # create a task
-        req = ResolveRequest_Response_Res_File_Req(url="http://speedtest.tele2.net/100MB.zip")
+        req = ResolveRequest(url="http://speedtest.tele2.net/100MB.zip")
         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-        data = CreateATask_fromUrl(req=req, opt=opt)
+        data = CreateATask_FromUrl(req=req, opt=opt)
         task = self.client.create_a_task_from_url(data)
         assert task.code == 0
         time.sleep(1)
@@ -273,13 +281,13 @@ class TestClassAsyncGospeedClientInstance:
 
     async def test_async_create_a_request_from_url(self):
         """A comprehensive test. resolve_request, create task, check task info and delete task finally."""
-        from gospeed_api.models.create_a_task import CreateTask_DownloadOpt, CreateATask_fromUrl
-        from gospeed_api.models import ResolveRequest_Response_Res_File_Req, TASK_STATUS
+        from gospeed_api.models.create_a_task import CreateTask_DownloadOpt, CreateATask_FromUrl
+        from gospeed_api.models import ResolveRequest, TASK_STATUS
 
         # create download task from url
         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-        req = ResolveRequest_Response_Res_File_Req(url='https://example.com/index.html')
-        data = CreateATask_fromUrl(req=req, opt=opt)
+        req = ResolveRequest(url='https://example.com/index.html')
+        data = CreateATask_FromUrl(req=req, opt=opt)
         task = await self.async_client.async_create_a_task_from_url(param=data)
         assert task.code == 0
         # print(f"task_id: {task.data}") # task id
@@ -329,14 +337,14 @@ class TestClassAsyncGospeedClientInstance:
         """test pause one/every and continue one/every task function."""
         # http://speedtest.tele2.net/ used for speed test by download big file.
         # http://speedtest.tele2.net/100MB.zip this is what I used.
-        from gospeed_api.models import ResolveRequest_Response_Res_File_Req
+        from gospeed_api.models import ResolveRequest
         from gospeed_api.models import TASK_STATUS, CreateTask_DownloadOpt
-        from gospeed_api.models.create_a_task import CreateATask_fromUrl
+        from gospeed_api.models.create_a_task import CreateATask_FromUrl
 
         # create a task
-        req = ResolveRequest_Response_Res_File_Req(url="http://speedtest.tele2.net/100MB.zip")
+        req = ResolveRequest(url="http://speedtest.tele2.net/100MB.zip")
         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-        data = CreateATask_fromUrl(req=req, opt=opt)
+        data = CreateATask_FromUrl(req=req, opt=opt)
         task = await self.async_client.async_create_a_task_from_url(data)
         assert task.code == 0
         await anyio.sleep(1)
@@ -387,14 +395,14 @@ class TestClassGospeedClientInstance_DeleteAllTasks:
     def test_delete_all_tasks(self):
         """test delete teaks method"""
         # http://speedtest.tele2.net/100MB.zip this is what I used.
-        from gospeed_api.models import ResolveRequest_Response_Res_File_Req
+        from gospeed_api.models import ResolveRequest
         from gospeed_api.models import TASK_STATUS, CreateTask_DownloadOpt
-        from gospeed_api.models.create_a_task import CreateATask_fromUrl
+        from gospeed_api.models.create_a_task import CreateATask_FromUrl
 
         # create a task
-        req = ResolveRequest_Response_Res_File_Req(url="http://speedtest.tele2.net/100MB.zip")
+        req = ResolveRequest(url="http://speedtest.tele2.net/100MB.zip")
         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-        data = CreateATask_fromUrl(req=req, opt=opt)
+        data = CreateATask_FromUrl(req=req, opt=opt)
         task = self.client.create_a_task_from_url(data)
         assert task.code == 0
         time.sleep(1)
@@ -417,14 +425,14 @@ class TestClassAsyncGospeedClientInstance_DeleteAllTasks:
     async def test_async_delete_all_tasks(self):
         """test async delete teaks method"""
         # http://speedtest.tele2.net/100MB.zip this is what I used.
-        from gospeed_api.models import ResolveRequest_Response_Res_File_Req
+        from gospeed_api.models import ResolveRequest
         from gospeed_api.models import TASK_STATUS, CreateTask_DownloadOpt
-        from gospeed_api.models.create_a_task import CreateATask_fromUrl
+        from gospeed_api.models.create_a_task import CreateATask_FromUrl
 
         # create a task
-        req = ResolveRequest_Response_Res_File_Req(url="http://speedtest.tele2.net/100MB.zip")
+        req = ResolveRequest(url="http://speedtest.tele2.net/100MB.zip")
         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-        data = CreateATask_fromUrl(req=req, opt=opt)
+        data = CreateATask_FromUrl(req=req, opt=opt)
         task = await self.async_client.async_create_a_task_from_url(data)
         assert task.code == 0
         await anyio.sleep(1)

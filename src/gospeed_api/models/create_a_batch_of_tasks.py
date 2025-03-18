@@ -7,7 +7,7 @@ class TaskUrl(BaseModel):
 
 class CreateABatchOfTasks(BaseModel):
     reqs: List[TaskUrl]
-    opt: CreateTask_DownloadOpt
+    opt: CreateTask_DownloadOpt | None = None
 
 class CreateABatchOfTasks_Response(BaseModel):
     code: int
