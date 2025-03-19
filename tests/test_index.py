@@ -1,4 +1,6 @@
 from src.gospeed_api.index import GospeedAPI
+from src.gospeed_api.models import TASK_STATUS
+from src.gospeed_api
 import tempfile
 import time
 import anyio
@@ -9,12 +11,49 @@ pytestmark = pytest.mark.anyio
 # For example showcase, I will write import statement inside test method.
 
 @pytest.fixture
-def api_client():
+def gopeed_api():
     return GospeedAPI()
 
 class TestGospeedAPI:
-    pass
+    def how_to_CRUD_singel_Gopeed_task(self, gopeed_api: GospeedAPI):
+        # create task and get task_id
+        task_0 = gopeed_api.create_a_task_from_url(url="http://speedtest.tele2.net/100MB.zip")
+        task_0.task_id
 
+        time.sleep(1)
+
+        # fetch task status
+        task_0_status = gopeed_api.get_task_info(rid=task_0.task_id)
+        assert task_0_status.task_info.status == TASK_STATUS.RUNNING
+
+        # pause a task
+        res = gopeed_api.pause_a_task(task_0.task_id)
+        assert res.code == 0 # success
+
+        time.sleep(1)
+
+        # continue a task
+        res = gopeed_api.continue_a_task(task_0.task_id)
+        assert res.code == 0 # success
+
+        # delete a task
+        res = gopeed_api.delete_a_task(task_0.task_id, force=True) # force means to delete the task's file too
+        assert res.code == 0 # success
+    
+    def how_to_CRUD_multiple_Gopeed_tasks(self, gopeed_api: GospeedAPI):
+        # create a bunch of tasks
+        task_id_list = gopeed_api.create_a_batch_of_tasks(
+            [
+                'http://speedtest.tele2.net/1MB.zip',
+                'http://speedtest.tele2.net/10MB.zip',
+                'http://speedtest.tele2.net/100MB.zip',
+                'http://speedtest.tele2.net/1GB.zip'
+            ]
+        )
+
+        # fetch status of multiple tasks
+        gopeed_api.get_task_list(task_id_list)
+        
 
 class TestClassGospeedClientInstance:
     """Initialize object with api address."""

@@ -12,4 +12,4 @@ class CreateABatchOfTasks(BaseModel):
 class CreateABatchOfTasks_Response(BaseModel):
     code: int
     msg: str
-    data: List[str]
+    data: List[str] # list of task_id

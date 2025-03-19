@@ -14,3 +14,6 @@ class CreateATask_Response(BaseModel):
     code: int
     msg: str
     data: str # this is created task id
+    @property
+    def task_id(self):
+        return self.data
