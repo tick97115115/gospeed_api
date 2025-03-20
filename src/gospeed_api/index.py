@@ -182,13 +182,13 @@ class GospeedAPI:
         json = check_response_and_return_data(res)
         return DeleteATask_Response(**json)
     
-    def get_task_stats(self, rid: str):
+    def get_task_stats(self, rid: str) -> GetTaskStats_Response:
         """get BT task stats"""
         res = self.httpx_client.get(my_url_join(my_url_join(self.endpoint_info, rid), 'stats'))
         json = check_response_and_return_data(res)
         return GetTaskStats_Response(**json)
     
-    async def async_get_task_stats(self, rid: str):
+    async def async_get_task_stats(self, rid: str) -> GetTaskStats_Response:
         """get BT task stats"""
         res = await self.async_httpx_client.get(my_url_join(my_url_join(self.endpoint_info, rid), 'stats'))
         json = check_response_and_return_data(res)
