@@ -13,3 +13,7 @@ class CreateABatchOfTasks_Response(BaseModel):
     code: int
     msg: str
     data: List[str] # list of task_id
+
+    @property
+    def id_list(self):
+        return self.data

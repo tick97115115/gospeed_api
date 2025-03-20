@@ -3,8 +3,8 @@ from pydantic import BaseModel
 from enum import StrEnum
 
 class GopeedAPIError(Exception):
-    def __init__(self, code: int, msg: str, *args):
-        super().__init__(*args)
+    def __init__(self, code: int, msg: str, summary: str):
+        super().__init__(summary)
         self.code = code
         self.msg = msg
 
@@ -82,5 +82,5 @@ class GopeedResponse(BaseModel):
     def summary(self) -> str:
         return f"Gopeed response code: \"{self.code}\", \n{self.msg}"
     
-    def throw(self):
-        raise GopeedAPIError(code=self.code, msg=self.msg)
+    def raise_error(self):
+        raise GopeedAPIError(code=self.code, msg=self.msg, summary=self.summary)
