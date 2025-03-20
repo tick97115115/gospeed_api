@@ -46,7 +46,7 @@ def check_response_and_return_data(res: Response) -> Dict:
     return res.json()
 
 class GospeedAPI:
-    def __init__(self, gopeed_host: str, httpx_client: Client = Client(), async_httpx_client: AsyncClient = AsyncClient()):
+    def __init__(self, gopeed_host: str, httpx_client: Client = Client(), async_httpx_client: AsyncClient = AsyncClient()) -> None:
         self.httpx_client = httpx_client
         self.async_httpx_client = async_httpx_client
         # prevent string conjunction bug while using urllib.parse.urljoin()
