@@ -80,7 +80,7 @@ class GopeedResponse(BaseModel):
     
     @property
     def summary(self) -> str:
-        return f"Gopeed response code: \"{self.code}\", \n{self.msg}"
+        return f"\nGopeed response code: \"{self.code}\", \n{self.msg}"
     
     def raise_error(self):
         raise GopeedAPIError(code=self.code, msg=self.msg, summary=self.summary)

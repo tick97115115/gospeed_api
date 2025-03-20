@@ -1,6 +1,6 @@
 [project]
 name = "gospeed-api"
-version = "2.1.3"
+version = "3.0.0"
 description = "Default template for PDM package"
 authors = [
     {name = "tick97115115", email = "32931796+tick97115115@users.noreply.github.com"},
@@ -23,12 +23,6 @@ build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = true
-
-[tool.pdm.scripts]
-test_sync = "pytest -k TestClassGospeedClientInstance -s"
-test_async = "pytest -k TestClassAsyncGospeedClientInstance -s"
-test_sync_delete_all = "pytest -k TestClassGospeedClientInstance_DeleteAllTasks -s"
-test_async_delete_all = "pytest -k TestClassAsyncGospeedClientInstance_DeleteAllTasks -s"
 
 [tool.pdm.dev-dependencies]
 dev = [

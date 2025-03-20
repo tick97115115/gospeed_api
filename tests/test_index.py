@@ -1,7 +1,6 @@
 from src.gospeed_api.index import GospeedAPI
-from src.gospeed_api.models import TASK_STATUS, GopeedAPIError
+from src.gospeed_api.models import TASK_STATUS
 from src.gospeed_api.models.create_a_task import CreateATask_Response
-import tempfile
 import time
 import anyio
 
@@ -9,13 +8,15 @@ import pytest
 pytestmark = pytest.mark.anyio
 
 # For example showcase, I will write import statement inside test method.
+# For simplify, see how tests running in TestGospeedAPI_Sync class will be enough to capture the usage,
+# cause use async functions have not much difference. (Just add "await" keyword before every async function.)
 
 @pytest.fixture
 def gopeed_api():
-    return GospeedAPI()
+    return GospeedAPI("http://127.0.0.1:9999")
 
-class TestGospeedAPI:
-    def how_to_CRUD_singel_Gopeed_task(self, gopeed_api: GospeedAPI):
+class TestGospeedAPI_Sync:
+    def test_how_to_CRUD_singel_Gopeed_task(self, gopeed_api: GospeedAPI):
         # create task and get task_id
         task_0 = gopeed_api.create_a_task_from_url(url="http://speedtest.tele2.net/100MB.zip")
         task_0.task_id
@@ -40,7 +41,7 @@ class TestGospeedAPI:
         task_0_res_2 = gopeed_api.delete_a_task(task_0.task_id, force=True) # force means to delete the task's file too
         assert task_0_res_2.code == 0 # success
     
-    def how_to_CRUD_multiple_Gopeed_tasks(self, gopeed_api: GospeedAPI):
+    def test_how_to_CRUD_multiple_Gopeed_tasks(self, gopeed_api: GospeedAPI):
         # create a bunch of tasks
         urls = [
             'http://speedtest.tele2.net/1MB.zip',
@@ -50,14 +51,19 @@ class TestGospeedAPI:
         ]
         tasks = gopeed_api.create_a_batch_of_tasks(urls=urls)
 
+        time.sleep(1)
+
         # fetch status of multiple tasks
         task_info_list = gopeed_api.get_task_list(tasks.id_list)
         for task in task_info_list.data:
             assert task.meta.req.url in urls
+        task_info_list = gopeed_api.get_task_list(tasks.id_list)
         assert len(task_info_list.data) == 4
 
         # pause all tasks
         gopeed_api.pause_all_tasks()
+
+        time.sleep(1)
 
         def check_pause_status():
             # fetch status of multiple tasks
@@ -71,6 +77,8 @@ class TestGospeedAPI:
         # continue all tasks
         gopeed_api.continue_all_tasks()
 
+        time.sleep(1)
+
         def check_continue_status():
             # fetch status of multiple tasks
             task_info_list = gopeed_api.get_task_list(tasks.id_list)
@@ -83,437 +91,81 @@ class TestGospeedAPI:
         # delete tasks
         gopeed_api.delete_tasks(tasks.id_list)
 
-# class TestClassGospeedClientInstance:
-#     """Initialize object with api address."""
-#     client = GospeedClient('http://127.0.0.1:9999/')
+class TestGospeedAPI_Async:
+    async def test_how_to_CRUD_singel_Gopeed_task(self, gopeed_api: GospeedAPI):
+        # create task and get task_id
+        task_0 = await gopeed_api.async_create_a_task_from_url(url="http://speedtest.tele2.net/100MB.zip")
+        task_0.task_id
 
-#     def test_get_server_info(self):
-#         """test get server info function"""
-#         from gospeed_api.models.get_server_info import GetServerInfo_Response
+        await anyio.sleep(1)
 
-#         res: GetServerInfo_Response = self.client.get_server_info()
-#         # If response.code property == 0, it means everything working fine.
-#         assert res.code == 0
-  
-#     def test_get_task_list(self):
-#         """Retrive all tasks info those corresponding to specified status"""
-#         from gospeed_api.models.get_task_list import GetTaskList_Response
-#         from gospeed_api.models import TASK_STATUS
+        # fetch task status
+        task_0_status = await gopeed_api.async_get_task_info(rid=task_0.task_id)
+        assert task_0_status.task_info.status == TASK_STATUS.RUNNING
 
-#         data: GetTaskList_Response = self.client.get_task_list(status={TASK_STATUS.DONE}) 
-#         # This method Receive a Set[Task_STATUS] as input, you could specify different status inside like:
-#         # self.client.get_task_list({TASK_STATUS.DONE, TASK_STATUS.PAUSE}) # to retrive multiple tasks info those have corresponding status.
-        
-#         # If you want get every task info, just ignore status paramter, 
-#         # like: self.client.get_task_list()
-#         assert data.code == 0
+        # pause a task
+        task_0_res_0 = await gopeed_api.async_pause_a_task(task_0.task_id)
+        assert task_0_res_0.code == 0 # success
 
-#     def test_create_a_task_and_get_task_info(self):
-#         """A comprehensive test. resolve_request, create task, check task info and delete task finally."""
-#         from gospeed_api.models import CreateTask_DownloadOpt, TASK_STATUS
-#         from gospeed_api.models.create_a_task import CreateATask_fromResolvedId, CreateATask_Response
-#         from gospeed_api.models.get_task_info import GetTaskInfo_Response
-#         from gospeed_api.models.resolve_a_request import ResolveRequest
+        await anyio.sleep(1)
 
-#         # resolve a resource request link
-#         resolve_request_param = ResolveRequest(url="https://example.com/index.html")
-#         resolvedInfo = self.client.resolve_a_request(param=resolve_request_param)
-#         # create a download task by resolved info id
-#         create_a_task_by_id_opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-#         create_a_task_by_id_param = CreateATask_fromResolvedId(rid=resolvedInfo.data.id, opt=create_a_task_by_id_opt)
-#         # get task object info and task id
-#         task: CreateATask_Response = self.client.create_a_task_from_resolved_id(param=create_a_task_by_id_param)
-#         rid = task.data
-#         # use get_task_info method, the 'res' property inside Task_Meta Class will return None
-#         task_info: GetTaskInfo_Response = self.client.get_task_info(rid=rid)
-#         assert task_info.code == 0
-#         # Retrive task info and check task status
-#         while True:
-#             time.sleep(2)
-#             task_info: GetTaskInfo_Response = self.client.get_task_info(rid=rid)
-#             if (task_info.data.status == TASK_STATUS.DONE):
-#                 break
-#         # Detele task, force=True means delete file also.
-#         self.client.delete_a_task(rid=task_info.data.id, force=True)
+        # continue a task
+        task_0_res_1 = await gopeed_api.async_continue_a_task(task_0.task_id)
+        assert task_0_res_1.code == 0 # success
 
-#     def test_resolve_a_request_create_a_task_from_resolved_info_and_delete_the_task(self):
-#         from gospeed_api.models.resolve_a_request import ResolveRequest
-#         from gospeed_api.models.create_a_task import CreateTask_DownloadOpt, CreateATask_fromResolvedId
-#         from gospeed_api.models import TASK_STATUS
-
-#         # Resolve resource
-#         id_resolve_response = self.client.resolve_a_request(ResolveRequest(url="https://example.com/index.html"))
-#         assert id_resolve_response.code == 0
-        
-#         # Create download task from resolved id
-#         rid = id_resolve_response.data.id
-#         filename = id_resolve_response.data.res.files[0].name
-#         opt = CreateTask_DownloadOpt(name=filename, path=tempfile.gettempdir())
-#         task = self.client.create_a_task_from_resolved_id(CreateATask_fromResolvedId(rid=rid, opt=opt))
-#         assert task.code == 0
-#         # print(f"task_id: {task.data}") # When create single task, the returned object's data property is task id!
-        
-#         # Get task info and checking status
-#         while True:
-#             time.sleep(2)
-#             task_info = self.client.get_task_info(rid=task.data)
-#             if (task_info.data.status == TASK_STATUS.DONE):
-#                 break
-#         # Delete task
-#         delete_response = self.client.delete_a_task(rid=task.data, force=True)
-#         assert delete_response.code == 0
+        # delete a task
+        task_0_res_2 = await gopeed_api.async_delete_a_task(task_0.task_id, force=True) # force means to delete the task's file too
+        assert task_0_res_2.code == 0 # success
     
-#     def test_create_a_request_from_url(self):
-#         from gospeed_api.models.create_a_task import CreateTask_DownloadOpt, CreateATask_FromUrl
-#         from gospeed_api.models import ResolveRequest, TASK_STATUS
+    async def test_how_to_CRUD_multiple_Gopeed_tasks(self, gopeed_api: GospeedAPI):
+        # create a bunch of tasks
+        urls = [
+            'http://speedtest.tele2.net/1MB.zip',
+            'http://speedtest.tele2.net/10MB.zip',
+            'http://speedtest.tele2.net/100MB.zip',
+            'http://speedtest.tele2.net/1GB.zip'
+        ]
+        tasks = await gopeed_api.async_create_a_batch_of_tasks(urls=urls)
 
-#         # create download task from url
-#         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-#         req = ResolveRequest(url='https://example.com/index.html')
-#         data = CreateATask_FromUrl(req=req, opt=opt)
-#         task = self.client.create_a_task_from_url(param=data)
-#         assert task.code == 0
-#         # print(f"task_id: {task.data}") # task id
-#         # delete task
-#         while True:
-#             time.sleep(2)
-#             task_info = self.client.get_task_info(rid=task.data)
-#             if (task_info.data.status == TASK_STATUS.DONE):
-#                 break
-#         delete_response = self.client.delete_a_task(rid=task.data, force=True)
-#         assert delete_response.code == 0
+        await anyio.sleep(1)
 
-#     def test_create_and_delete_a_batch_of_tasks(self):
-#         from gospeed_api.models.create_a_batch_of_tasks import TaskUrl, CreateABatchOfTasks, CreateABatchOfTasks_Response
-#         from gospeed_api.models.create_a_task import CreateTask_DownloadOpt
-#         from gospeed_api.models.get_task_info import GetTaskInfo_Response
-#         from gospeed_api.models import TASK_STATUS
-#         from gospeed_api.models.delete_a_task import DeleteATask_Response
+        # fetch status of multiple tasks
+        task_info_list = await gopeed_api.async_get_task_list(tasks.id_list)
+        for task in task_info_list.data:
+            assert task.meta.req.url in urls
+        task_info_list = await gopeed_api.async_get_task_list(tasks.id_list)
+        assert len(task_info_list.data) == 4
 
-#         # Define two target urls.
-#         url1 = TaskUrl(url='https://example.com/index.html')
-#         url2 = TaskUrl(url='https://example.com/index.html')
-        
-#         # define download opt
-#         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-#         # Create download task
-#         tasks = CreateABatchOfTasks(reqs=[url1, url2], opt=opt)
-#         res_data: CreateABatchOfTasks_Response = self.client.create_a_batch_of_tasks(data=tasks)
-#         assert res_data.code == 0
+        # pause all tasks
+        await gopeed_api.async_pause_all_tasks()
 
-#         while True:
-#             time.sleep(2)
-#             task1_info: GetTaskInfo_Response = self.client.get_task_info(res_data.data[0])
-#             task2_info: GetTaskInfo_Response = self.client.get_task_info(res_data.data[1])
-#             # check task status and delete them
-#             if (task1_info.data.status == TASK_STATUS.DONE and task2_info.data.status == TASK_STATUS.DONE and task1_info.data.id != task2_info.data.id):
-#                 task1_delete_res: DeleteATask_Response = self.client.delete_a_task(rid=task1_info.data.id, force=True)
-#                 task2_delete_res: DeleteATask_Response = self.client.delete_a_task(rid=task2_info.data.id, force=True)
-#                 # For avoid test exception, in here I delete them one by one, please take much care when use this function.
-#                 # delete all exists tasks, like below: 
-#                 # self.client.delete_tasks(status={TASK_STATUS.DONE, TASK_STATUS.ERROR}, force=True)
-#                 assert task1_delete_res.code == 0
-#                 assert task2_delete_res.code == 0
-#                 break
+        await anyio.sleep(1)
 
-#     def test_pause_and_continue_task(self):
-#         """test pause one/every and continue one/every task function."""
-#         # http://speedtest.tele2.net/ used for speed test by download big file.
-#         # http://speedtest.tele2.net/100MB.zip this is what I used.
-#         from gospeed_api.models import ResolveRequest
-#         from gospeed_api.models import TASK_STATUS, CreateTask_DownloadOpt
-#         from gospeed_api.models.create_a_task import CreateATask_FromUrl
+        async def async_check_pause_status():
+            # fetch status of multiple tasks
+            task_info_list = await gopeed_api.async_get_task_list(tasks.id_list)
+            for task in task_info_list.data:
+                if (task.status == TASK_STATUS.PAUSE):
+                    return
+            raise Exception("pause failed")
+        await async_check_pause_status()
 
-#         # create a task
-#         req = ResolveRequest(url="http://speedtest.tele2.net/100MB.zip")
-#         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-#         data = CreateATask_FromUrl(req=req, opt=opt)
-#         task = self.client.create_a_task_from_url(data)
-#         assert task.code == 0
-#         time.sleep(1)
-#         task_rid = task.data
-#         res = self.client.get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.RUNNING
+        # continue all tasks
+        await gopeed_api.async_continue_all_tasks()
 
-#         # pause a task
-#         time.sleep(2)
-#         res = self.client.pause_a_task(rid=task_rid)
-#         assert res.code == 0
-#         time.sleep(1)
-#         res = self.client.get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.PAUSE
+        await anyio.sleep(1)
 
-#         # continue a task
-#         time.sleep(2)
-#         res = self.client.continue_a_task(rid=task_rid)
-#         assert res.code == 0
-#         time.sleep(1)
-#         res = self.client.get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.RUNNING
+        async def async_check_continue_status():
+            # fetch status of multiple tasks
+            task_info_list = await gopeed_api.async_get_task_list(tasks.id_list)
+            for task in task_info_list.data:
+                if (task.status == TASK_STATUS.RUNNING):
+                    return
+            raise Exception("continue failed")
+        await async_check_continue_status()
 
-#         # pause all tasks
-#         time.sleep(2)
-#         res = self.client.pause_all_tasks()
-#         assert res.code == 0
-#         time.sleep(1)
-#         res = self.client.get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.PAUSE
-
-#         # continue all tasks
-#         time.sleep(2)
-#         res = self.client.continue_all_tasks()
-#         assert res.code == 0
-#         time.sleep(1)
-#         res = self.client.get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.RUNNING
-
-#         # delete task
-#         res = self.client.delete_a_task(rid=task_rid, force=True)
-#         assert res.code == 0
-
-# class TestClassAsyncGospeedClientInstance:
-#     """Initialize object with api address."""
-#     async_client = AsyncGospeedClient('http://127.0.0.1:9999/')
-
-#     async def test_async_get_server_info(self):
-#         """test async_get_server_info method, no much difference with sync version."""
-#         from gospeed_api.models.get_server_info import GetServerInfo_Response
-        
-#         res: GetServerInfo_Response = await self.async_client.async_get_server_info()
-#         assert res.code == 0
-
-#     async def test_async_get_task_list(self):
-#         """test async_get_task_list method, no much difference with sync version."""
-#         from gospeed_api.models.get_task_list import GetTaskList_Response
-#         from gospeed_api.models import TASK_STATUS
-        
-#         data: GetTaskList_Response = await self.async_client.async_get_task_list(status={TASK_STATUS.DONE})
-#         assert data.code == 0
-
-#     async def test_async_create_a_task_and_get_task_info(self):
-#         """A comprehensive test. resolve_request, create task, check task info and delete task finally."""
-#         from gospeed_api.models import CreateTask_DownloadOpt, TASK_STATUS
-#         from gospeed_api.models.create_a_task import CreateATask_fromResolvedId, CreateATask_Response
-#         from gospeed_api.models.get_task_info import GetTaskInfo_Response
-#         from gospeed_api.models.resolve_a_request import ResolveRequest
-
-#         # resolve a resource request link
-#         resolve_request_param = ResolveRequest(url="https://example.com/index.html")
-#         resolved_info = await self.async_client.async_resolve_a_request(param=resolve_request_param)
-#         # create a download task by resolved info id
-#         create_a_task_by_id_opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-#         create_a_task_by_id_param = CreateATask_fromResolvedId(rid=resolved_info.data.id, opt=create_a_task_by_id_opt)
-#         # get task object info and task id
-#         task: CreateATask_Response = await self.async_client.async_create_a_task_from_resolved_id(param=create_a_task_by_id_param)
-#         rid = task.data
-#         # use get_task_info method, the 'res' property inside Task_Meta Class will return None
-#         task_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(rid=rid)
-#         assert task_info.code == 0
-#         # Retrive task info and check task status
-#         while True:
-#             await anyio.sleep(2)
-#             task_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(rid=rid)
-#             if (task_info.data.status == TASK_STATUS.DONE):
-#                 break
-#         # Detele task, force=True means delete file also.
-#         await self.async_client.async_delete_a_task(rid=task_info.data.id, force=True)
-
-#     async def test_async_resolve_a_request_create_a_task_from_resolved_info_and_delete_the_task(self):
-#         """A comprehensive test. resolve_request, create task, check task info and delete task finally."""
-#         from gospeed_api.models.resolve_a_request import ResolveRequest
-#         from gospeed_api.models.create_a_task import CreateTask_DownloadOpt, CreateATask_fromResolvedId
-#         from gospeed_api.models import TASK_STATUS
-
-#         # Resolve resource
-#         id_resolve_response = await self.async_client.async_resolve_a_request(ResolveRequest(url="https://example.com/index.html"))
-#         assert id_resolve_response.code == 0
-        
-#         # Create download task from resolved id
-#         rid = id_resolve_response.data.id
-#         filename = id_resolve_response.data.res.files[0].name
-#         opt = CreateTask_DownloadOpt(name=filename, path=tempfile.gettempdir())
-#         task = await self.async_client.async_create_a_task_from_resolved_id(CreateATask_fromResolvedId(rid=rid, opt=opt))
-#         assert task.code == 0
-#         # print(f"task_id: {task.data}") # When create single task, the returned object's data property is task id!
-        
-#         # Get task info and checking status
-#         while True:
-#             await anyio.sleep(2)
-#             task_info = await self.async_client.async_get_task_info(rid=task.data)
-#             if (task_info.data.status == TASK_STATUS.DONE):
-#                 break
-#         # Delete task
-#         delete_response = await self.async_client.async_delete_a_task(rid=task.data, force=True)
-#         assert delete_response.code == 0
-
-#     async def test_async_create_a_request_from_url(self):
-#         """A comprehensive test. resolve_request, create task, check task info and delete task finally."""
-#         from gospeed_api.models.create_a_task import CreateTask_DownloadOpt, CreateATask_FromUrl
-#         from gospeed_api.models import ResolveRequest, TASK_STATUS
-
-#         # create download task from url
-#         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-#         req = ResolveRequest(url='https://example.com/index.html')
-#         data = CreateATask_FromUrl(req=req, opt=opt)
-#         task = await self.async_client.async_create_a_task_from_url(param=data)
-#         assert task.code == 0
-#         # print(f"task_id: {task.data}") # task id
-#         # delete task
-#         while True:
-#             await anyio.sleep(2)
-#             task_info = await self.async_client.async_get_task_info(rid=task.data)
-#             if (task_info.data.status == TASK_STATUS.DONE):
-#                 break
-#         delete_response = await self.async_client.async_delete_a_task(rid=task.data, force=True)
-#         assert delete_response.code == 0
-
-#     async def test_async_create_and_delete_a_batch_of_tasks(self):
-#         """A comprehensive test. resolve_request, create task, check task info and delete task finally."""
-#         from gospeed_api.models.create_a_batch_of_tasks import TaskUrl, CreateABatchOfTasks, CreateABatchOfTasks_Response
-#         from gospeed_api.models.create_a_task import CreateTask_DownloadOpt
-#         from gospeed_api.models.get_task_info import GetTaskInfo_Response
-#         from gospeed_api.models import TASK_STATUS
-#         from gospeed_api.models.delete_a_task import DeleteATask_Response
-
-#         # Define two target urls.
-#         url1 = TaskUrl(url='https://example.com/index.html')
-#         url2 = TaskUrl(url='https://example.com/index.html')
-        
-#         # define download opt
-#         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-#         # Create download task
-#         tasks = CreateABatchOfTasks(reqs=[url1, url2], opt=opt)
-#         res_data: CreateABatchOfTasks_Response = await self.async_client.async_create_a_batch_of_tasks(data=tasks)
-#         assert res_data.code == 0
-
-#         while True:
-#             await anyio.sleep(2)
-#             task1_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(res_data.data[0])
-#             task2_info: GetTaskInfo_Response = await self.async_client.async_get_task_info(res_data.data[1])
-#             if (task1_info.data.status == TASK_STATUS.DONE and task2_info.data.status == TASK_STATUS.DONE):
-#                 task1_delete_res: DeleteATask_Response = await self.async_client.async_delete_a_task(rid=res_data.data[0], force=True)
-#                 task2_delete_res: DeleteATask_Response = await self.async_client.async_delete_a_task(rid=res_data.data[1], force=True)
-#                 # For avoid test exception, in here I delete them one by one, please take much care when use this function.
-#                 # delete all exists tasks, like below: 
-#                 # await self.async_client.async_delete_tasks(status={TASK_STATUS.DONE, TASK_STATUS.ERROR}, force=True)
-#                 assert task1_delete_res.code == 0
-#                 assert task2_delete_res.code == 0
-#                 break
-    
-#     async def test_async_pause_and_continue_task(self):
-#         """test pause one/every and continue one/every task function."""
-#         # http://speedtest.tele2.net/ used for speed test by download big file.
-#         # http://speedtest.tele2.net/100MB.zip this is what I used.
-#         from gospeed_api.models import ResolveRequest
-#         from gospeed_api.models import TASK_STATUS, CreateTask_DownloadOpt
-#         from gospeed_api.models.create_a_task import CreateATask_FromUrl
-
-#         # create a task
-#         req = ResolveRequest(url="http://speedtest.tele2.net/100MB.zip")
-#         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-#         data = CreateATask_FromUrl(req=req, opt=opt)
-#         task = await self.async_client.async_create_a_task_from_url(data)
-#         assert task.code == 0
-#         await anyio.sleep(1)
-#         task_rid = task.data
-#         res = await self.async_client.async_get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.RUNNING
-
-#         # pause a task
-#         await anyio.sleep(2)
-#         res = await self.async_client.async_pause_a_task(rid=task_rid)
-#         assert res.code == 0
-#         await anyio.sleep(1)
-#         res = await self.async_client.async_get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.PAUSE
-
-#         #continue a task
-#         await anyio.sleep(2)
-#         res = await self.async_client.async_continue_a_task(rid=task_rid)
-#         assert res.code == 0
-#         await anyio.sleep(1)
-#         res = await self.async_client.async_get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.RUNNING
-
-#         # pause all tasks
-#         await anyio.sleep(2)
-#         res = await self.async_client.async_pause_all_tasks()
-#         assert res.code == 0
-#         await anyio.sleep(1)
-#         res = await self.async_client.async_get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.PAUSE
-
-#         # continue all tasks
-#         await anyio.sleep(2)
-#         res = await self.async_client.async_continue_all_tasks()
-#         assert res.code == 0
-#         await anyio.sleep(1)
-#         res = await self.async_client.async_get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.RUNNING
-
-#         # delete task
-#         res = await self.async_client.async_delete_a_task(rid=task_rid, force=True)
-#         assert res.code == 0
-
-# class TestClassGospeedClientInstance_DeleteAllTasks:
-#     """Run this (delete all) test carefully!!!!!! please check your exist download tasks before you run it!!!!!!"""
-#     client = GospeedClient('http://127.0.0.1:9999/')
-
-#     def test_delete_all_tasks(self):
-#         """test delete teaks method"""
-#         # http://speedtest.tele2.net/100MB.zip this is what I used.
-#         from gospeed_api.models import ResolveRequest
-#         from gospeed_api.models import TASK_STATUS, CreateTask_DownloadOpt
-#         from gospeed_api.models.create_a_task import CreateATask_FromUrl
-
-#         # create a task
-#         req = ResolveRequest(url="http://speedtest.tele2.net/100MB.zip")
-#         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-#         data = CreateATask_FromUrl(req=req, opt=opt)
-#         task = self.client.create_a_task_from_url(data)
-#         assert task.code == 0
-#         time.sleep(1)
-#         task_rid = task.data
-#         res = self.client.get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.RUNNING
-
-#         # invoke delete all tasks api
-#         self.client.delete_tasks(force=True) # leave status param to None, means delete all tasks inside downloader no matter what status it is.
-#         time.sleep(1)
-
-#         # check if have any task exists
-#         res = self.client.get_task_list()
-#         assert len(res.data) == 0
-
-# class TestClassAsyncGospeedClientInstance_DeleteAllTasks:
-#     """Run this (delete all) test carefully!!!!!! please check your exist download tasks before you run it!!!!!!"""
-#     async_client = AsyncGospeedClient('http://127.0.0.1:9999/')
-
-#     async def test_async_delete_all_tasks(self):
-#         """test async delete teaks method"""
-#         # http://speedtest.tele2.net/100MB.zip this is what I used.
-#         from gospeed_api.models import ResolveRequest
-#         from gospeed_api.models import TASK_STATUS, CreateTask_DownloadOpt
-#         from gospeed_api.models.create_a_task import CreateATask_FromUrl
-
-#         # create a task
-#         req = ResolveRequest(url="http://speedtest.tele2.net/100MB.zip")
-#         opt = CreateTask_DownloadOpt(path=tempfile.gettempdir())
-#         data = CreateATask_FromUrl(req=req, opt=opt)
-#         task = await self.async_client.async_create_a_task_from_url(data)
-#         assert task.code == 0
-#         await anyio.sleep(1)
-#         task_rid = task.data
-#         res = self.async_client.get_task_info(rid=task_rid)
-#         assert res.data.status == TASK_STATUS.RUNNING
-
-#         # invoke delete all tasks api
-#         await self.async_client.async_delete_tasks(force=True) # leave status param to None, means delete all tasks inside downloader no matter what status it is.
-#         await anyio.sleep(1)
-
-#         # check if have any task exists
-#         res = await self.async_client.async_get_task_list()
-#         assert len(res.data) == 0
+        # delete tasks
+        await gopeed_api.async_delete_tasks(tasks.id_list)
 
 def test_exception():
     res = {'code': 1, 'msg': 'test', 'data': 'test data'}

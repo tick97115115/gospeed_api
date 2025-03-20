@@ -17,11 +17,27 @@ from .models.delete_tasks import DeleteTasks_Request, DeleteTasks_Response
 from .models.get_task_stats import GetTaskStats_Response
 from .models import TASK_STATUS, CreateTask_DownloadOpt, Request_Extra_Opt
 
-# def my_url_join(first: str, last: str) -> str:
-#     """Checking slash symbol between url and path string."""
-#     if (first[-1] != '/' and last[0] != '/'):
-#         first = first + '/'
-#     return str(urljoin(first, last))
+def obj_filter(obj: Dict) -> Dict | None:
+    col = {}
+    for k, v in obj.items():
+        if v == None:
+            continue
+        elif isinstance(v, List) and len(v) == 0:
+            continue
+        else:
+            col[k] = v
+
+    if len(col.keys()) == 0:
+        return None
+    else:
+        return col
+
+
+def my_url_join(first: str, last: str) -> str:
+    """Checking slash symbol between url and path string."""
+    if (first[-1] != '/' and last[0] != '/'):
+        first = first + '/'
+    return str(urljoin(first, last))
 
 def check_response_and_return_data(res: Response) -> Dict:
     """check response status code then return json data"""
@@ -72,13 +88,15 @@ class GospeedAPI:
 
     def get_task_list(self,id_list: List[str], status: List[TASK_STATUS] | None = None, notStatus: List[TASK_STATUS] | None = None) -> GetTaskList_Response:
         """Get all tasks according to specified status."""
-        res = self.httpx_client.get(url=self.endpoint_task, params={'id': id_list ,'status': status, 'notStatus': notStatus}) # type: ignore
+        # Shouldn't 
+        # URL('http://127.0.0.1:9999/api/v1/tasks?id=_bzk6rchQMj78qJjmMAqq&id=KFSx1z3wXV7nCT7p43OcT&id=P6mNHl6XBlCfb9GBYyZAl&id=H21G0-70U9e2sOIcEz_PH&status=&notStatus=')
+        res = self.httpx_client.get(url=self.endpoint_task, params=obj_filter({'id': id_list ,'status': status, 'notStatus': notStatus})) # type: ignore
         json = check_response_and_return_data(res)
         return GetTaskList_Response(**json)
     
     async def async_get_task_list(self,id_list: List[str], status: List[TASK_STATUS] | None = None, notStatus: List[TASK_STATUS] | None = None) -> GetTaskList_Response:
         """Async implementation of get_task_list."""
-        res = await self.async_httpx_client.get(url=self.endpoint_task, params={'id': id_list ,'status': status, 'notStatus': notStatus}) # type: ignore
+        res = await self.async_httpx_client.get(url=self.endpoint_task, params=obj_filter({'id': id_list ,'status': status, 'notStatus': notStatus})) # type: ignore
         json = check_response_and_return_data(res)
         return GetTaskList_Response(**json)
 
@@ -113,14 +131,14 @@ class GospeedAPI:
     def delete_tasks(self, id_list: List[str] | None = None, status: List[TASK_STATUS] | None = None, notStatus: List[TASK_STATUS] | None = None, force: bool = False) -> DeleteTasks_Response:
         """Delete tasks according to specified status."""
         query_paramter = DeleteTasks_Request(id=id_list, status=status, notStatus=notStatus, force=force)
-        res = self.httpx_client.delete(self.endpoint_task, params=query_paramter.model_dump())
+        res = self.httpx_client.delete(self.endpoint_task, params=obj_filter(query_paramter.model_dump()))
         json = check_response_and_return_data(res)
         return DeleteTasks_Response(**json)
 
     async def async_delete_tasks(self, id_list: List[str] | None = None, status: List[TASK_STATUS] | None = None, notStatus: List[TASK_STATUS] | None = None, force: bool = False) -> DeleteTasks_Response:
         """Delete tasks according to specified status."""
         query_paramter = DeleteTasks_Request(id=id_list, status=status, notStatus=notStatus, force=force)
-        res = await self.async_httpx_client.delete(self.endpoint_task, params=query_paramter.model_dump())
+        res = await self.async_httpx_client.delete(self.endpoint_task, params=obj_filter(query_paramter.model_dump()))
         json = check_response_and_return_data(res)
         return DeleteTasks_Response(**json)
 
@@ -142,52 +160,52 @@ class GospeedAPI:
 
     def get_task_info(self, rid: str) -> GetTaskInfo_Response:
         """Get a task info from it's id."""
-        res = self.httpx_client.get(url=urljoin(self.endpoint_task, rid))
+        res = self.httpx_client.get(url=my_url_join(self.endpoint_task, rid))
         json = check_response_and_return_data(res)
         return GetTaskInfo_Response(**json)
     
     async def async_get_task_info(self, rid: str) -> GetTaskInfo_Response:
         """Get a task info from it's id."""
-        res = await self.async_httpx_client.get(url=urljoin(self.endpoint_task, rid))
+        res = await self.async_httpx_client.get(url=my_url_join(self.endpoint_task, rid))
         json = check_response_and_return_data(res)
         return GetTaskInfo_Response(**json)
 
     def delete_a_task(self, rid: str, force: bool = False) -> DeleteATask_Response:
         """Delete a task by specify it's id, force if true will delete the file also."""
-        res = self.httpx_client.delete(url=urljoin(self.endpoint_task, rid), params={'force': force})
+        res = self.httpx_client.delete(url=my_url_join(self.endpoint_task, rid), params=obj_filter({'force': force}))
         json = check_response_and_return_data(res)
         return DeleteATask_Response(**json)
     
     async def async_delete_a_task(self, rid: str, force: bool = False) -> DeleteATask_Response:
         """Delete a task by specify it's id, force if true will delete the file also."""
-        res = await self.async_httpx_client.delete(url=urljoin(self.endpoint_task, rid), params={'force': force})
+        res = await self.async_httpx_client.delete(url=my_url_join(self.endpoint_task, rid), params=obj_filter({'force': force}))
         json = check_response_and_return_data(res)
         return DeleteATask_Response(**json)
     
     def get_task_stats(self, rid: str):
         """get BT task stats"""
-        res = self.httpx_client.get(urljoin(urljoin(self.endpoint_info, rid), 'stats'))
+        res = self.httpx_client.get(my_url_join(my_url_join(self.endpoint_info, rid), 'stats'))
         json = check_response_and_return_data(res)
         return GetTaskStats_Response(**json)
     
     async def async_get_task_stats(self, rid: str):
         """get BT task stats"""
-        res = await self.async_httpx_client.get(urljoin(urljoin(self.endpoint_info, rid), 'stats'))
+        res = await self.async_httpx_client.get(my_url_join(my_url_join(self.endpoint_info, rid), 'stats'))
         json = check_response_and_return_data(res)
         return GetTaskStats_Response(**json)
 
     def pause_a_task(self, rid: str) -> PauseATask_Response:
         """Pause a task download according to task id."""
-        url = urljoin(self.endpoint_task, rid)
-        url = urljoin(url, 'pause')
+        url = my_url_join(self.endpoint_task, rid)
+        url = my_url_join(url, 'pause')
         res = self.httpx_client.put(url=url)
         json = check_response_and_return_data(res)
         return PauseATask_Response(**json)
     
     async def async_pause_a_task(self, rid: str) -> PauseATask_Response:
         """Pause a task download according to task id."""
-        url = urljoin(self.endpoint_task, rid)
-        url = urljoin(url, 'pause')
+        url = my_url_join(self.endpoint_task, rid)
+        url = my_url_join(url, 'pause')
         res = await self.async_httpx_client.put(url=url)
         json = check_response_and_return_data(res)
         return PauseATask_Response(**json)
@@ -206,16 +224,16 @@ class GospeedAPI:
 
     def continue_a_task(self, rid: str) -> ContinueATask_Response:
         """Continue a stop task according to task id."""
-        url = urljoin(self.endpoint_task, rid)
-        url = urljoin(url, 'continue')
+        url = my_url_join(self.endpoint_task, rid)
+        url = my_url_join(url, 'continue')
         res = self.httpx_client.put(url=url)
         json = check_response_and_return_data(res)
         return ContinueATask_Response(**json)
     
     async def async_continue_a_task(self, rid: str) -> ContinueATask_Response:
         """Continue a stop task according to task id."""
-        url = urljoin(self.endpoint_task, rid)
-        url = urljoin(url, 'continue')
+        url = my_url_join(self.endpoint_task, rid)
+        url = my_url_join(url, 'continue')
         res = await self.async_httpx_client.put(url=url)
         json = check_response_and_return_data(res)
         return ContinueATask_Response(**json)

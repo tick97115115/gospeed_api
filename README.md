@@ -1,5 +1,7 @@
 # Go~~s~~peed_api
 
+![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
+
 This project provide [Go~~s~~peed downloader](https://gopeed.com/) RestAPI full-covered interacting.
 
 > Sorry about that I made a mistake about its name. I realized that when I finished version 2.0.4;
@@ -41,3 +43,10 @@ I'm starting achiving these two objectives from the day I wrote above.
 2025/2/22/
 
 Now AsyncGospeedClient have an optional init paramter "httpx_async_client" to receive customized async httpx client object to send requests.
+
+---
+
+2025/3/20
+
+Now Ver3.0 dev finished!
+With 100% test coverage, simplified function usage and usage example. See [test_index.py](./tests/test_index.py).
