@@ -75,14 +75,14 @@ class GospeedAPI:
     def resolve_a_request(self, url: str, extra: Request_Extra_Opt | None = None, labels: Dict[str, str] | None = None) -> ResolveRequest_Response:
         """resolve request link and return ResolveRequest_Response data model object."""
         param = ResolveRequest(url=url, extra=extra, labels=labels)
-        res = self.httpx_client.post(url=self.endpoint_resolve, json=param.model_dump())
+        res = self.httpx_client.post(url=self.endpoint_resolve, json=param.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True))
         json = check_response_and_return_data(res)
         return ResolveRequest_Response(**json)
     
     async def async_resolve_a_request(self, url: str, extra: Request_Extra_Opt | None = None, labels: Dict[str, str] | None = None) -> ResolveRequest_Response:
         """Async implementation of resolve_a_request."""
         param = ResolveRequest(url=url, extra=extra, labels=labels)
-        res = await self.async_httpx_client.post(url=self.endpoint_resolve, json=param.model_dump())
+        res = await self.async_httpx_client.post(url=self.endpoint_resolve, json=param.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True))
         json = check_response_and_return_data(res)
         return ResolveRequest_Response(**json)
 
@@ -103,42 +103,42 @@ class GospeedAPI:
     def create_a_task_from_resolved_id(self, rid: str, opt: CreateTask_DownloadOpt | None = None) -> CreateATask_Response:
         """receive CreateATask_fromResolvedId object as paramter. see src\gospeed_api\models\create_a_task.py for detail return data structure."""
         param = CreateATask_fromResolvedId(rid=rid, opt=opt)
-        res = self.httpx_client.post(url=self.endpoint_task, json=param.model_dump())
+        res = self.httpx_client.post(url=self.endpoint_task, json=param.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True))
         json = check_response_and_return_data(res)
         return CreateATask_Response(**json)
     
     async def async_create_a_task_from_resolved_id(self, rid: str, opt: CreateTask_DownloadOpt | None = None) -> CreateATask_Response:
         """receive CreateATask_fromResolvedId object as paramter. see src\gospeed_api\models\create_a_task.py for detail return data structure."""
         param = CreateATask_fromResolvedId(rid=rid, opt=opt)
-        res = await self.async_httpx_client.post(url=self.endpoint_task, json=param.model_dump())
+        res = await self.async_httpx_client.post(url=self.endpoint_task, json=param.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True))
         json = check_response_and_return_data(res)
         return CreateATask_Response(**json) 
 
     def create_a_task_from_url(self, url: str, extra: Request_Extra_Opt | None = None, labels: Dict[str, str] | None = None, opt: CreateTask_DownloadOpt | None = None) -> CreateATask_Response:
         """Directly create a task instead of resolve it's information first."""
         param = CreateATask_FromUrl(req=ResolveRequest(url=url, extra=extra, labels=labels), opt=opt)
-        res = self.httpx_client.post(self.endpoint_task, json=param.model_dump())
+        res = self.httpx_client.post(self.endpoint_task, json=param.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True))
         json = check_response_and_return_data(res)
         return CreateATask_Response(**json)
     
     async def async_create_a_task_from_url(self, url: str, extra: Request_Extra_Opt | None = None, labels: Dict[str, str] | None = None, opt: CreateTask_DownloadOpt | None = None) -> CreateATask_Response:
         """Directly create a task instead of resolve it's information first."""
         param = CreateATask_FromUrl(req=ResolveRequest(url=url, extra=extra, labels=labels), opt=opt)
-        res = await self.async_httpx_client.post(self.endpoint_task, json=param.model_dump())
+        res = await self.async_httpx_client.post(self.endpoint_task, json=param.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True))
         json = check_response_and_return_data(res)
         return CreateATask_Response(**json)
 
     def delete_tasks(self, id_list: List[str] | None = None, status: List[TASK_STATUS] | None = None, notStatus: List[TASK_STATUS] | None = None, force: bool = False) -> DeleteTasks_Response:
         """Delete tasks according to specified status."""
         query_paramter = DeleteTasks_Request(id=id_list, status=status, notStatus=notStatus, force=force)
-        res = self.httpx_client.delete(self.endpoint_task, params=obj_filter(query_paramter.model_dump()))
+        res = self.httpx_client.delete(self.endpoint_task, params=obj_filter(query_paramter.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True)))
         json = check_response_and_return_data(res)
         return DeleteTasks_Response(**json)
 
     async def async_delete_tasks(self, id_list: List[str] | None = None, status: List[TASK_STATUS] | None = None, notStatus: List[TASK_STATUS] | None = None, force: bool = False) -> DeleteTasks_Response:
         """Delete tasks according to specified status."""
         query_paramter = DeleteTasks_Request(id=id_list, status=status, notStatus=notStatus, force=force)
-        res = await self.async_httpx_client.delete(self.endpoint_task, params=obj_filter(query_paramter.model_dump()))
+        res = await self.async_httpx_client.delete(self.endpoint_task, params=obj_filter(query_paramter.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True)))
         json = check_response_and_return_data(res)
         return DeleteTasks_Response(**json)
 
@@ -146,7 +146,7 @@ class GospeedAPI:
         """Create multiple tasks at once."""
         reqs = [TaskUrl(url=url) for url in urls]
         data = CreateABatchOfTasks(reqs=reqs, opt=opt)
-        res = self.httpx_client.post(self.endpoint_task_batch, json=data.model_dump())
+        res = self.httpx_client.post(self.endpoint_task_batch, json=data.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True))
         json = check_response_and_return_data(res)
         return CreateABatchOfTasks_Response(**json)
     
@@ -154,7 +154,7 @@ class GospeedAPI:
         """Create multiple tasks at once."""
         reqs = [TaskUrl(url=url) for url in urls]
         data = CreateABatchOfTasks(reqs=reqs, opt=opt)
-        res = await self.async_httpx_client.post(self.endpoint_task_batch, json=data.model_dump())
+        res = await self.async_httpx_client.post(self.endpoint_task_batch, json=data.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True))
         json = check_response_and_return_data(res)
         return CreateABatchOfTasks_Response(**json)
 
